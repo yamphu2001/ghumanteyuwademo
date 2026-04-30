@@ -1,0 +1,49 @@
+.compassWrapper {
+  /* Hard-pinned to top-right to avoid being hidden by UI panels */
+  position: fixed;
+  top: 25px;
+  right: 25px; 
+  
+  /* Extreme Z-Index for the pilot event */
+  z-index: 9999; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto; /* Ensure clicks register */
+}
+
+.compassBtn {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 65px;
+  height: 65px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.gyroActive {
+  border: 5px solid #ff0000 !important;
+  background: white;
+}
+
+.needle {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  /* Faster transition for real-time gyro feel */
+  transition: transform 0.1s linear; 
+}
+
+.gyroLabel {
+  font-size: 10px;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 1px;
+}

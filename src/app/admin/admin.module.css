@@ -1,0 +1,29 @@
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+}
+
+.adminBtn {
+  flex: 1; /* Exactly 33.33% of height */
+  width: 100%;
+  background: white;
+  border: none;
+  border-bottom: 2px solid #000;
+  font-size: 1.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #000;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.adminBtn:last-child {
+  border-bottom: none;
+}
+
+.adminBtn:active {
+  background: #000;
+  color: #fff;
+}

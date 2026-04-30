@@ -1,0 +1,38 @@
+.speedWrapper {
+  /* Positioning Logic */
+  position: fixed; /* Or absolute depending on parent */
+  bottom: 25px;    /* Matches your Compass top-offset for symmetry */
+  right: 25px; 
+  z-index: 9999;
+
+  /* Visuals (Same as your Compass) */
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 65px;
+  height: 65px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: auto;
+}
+
+.speedValue {
+  font-size: 20px;
+  font-weight: 900;
+  color: #ff0000;
+  line-height: 1;
+}
+
+.speedUnit {
+  font-size: 8px;
+  font-weight: 900;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}

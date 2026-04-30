@@ -1,0 +1,164 @@
+.main {
+  min-height: 100vh;
+  background-color: #ffffff;
+  color: #000000;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  font-family: sans-serif;
+}
+
+/* HEADER / LOGO */
+.logoWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 2rem;
+}
+
+.logo {
+  filter: grayscale(100%);
+}
+
+/* CENTER CONTENT */
+.centerContent {
+  width: 100%;
+  max-width: 24rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.header {
+  text-align: center;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  font-style: italic;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.5;
+  margin-top: 0.5rem;
+}
+
+/* PERMISSION ROWS */
+.permissionList {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.permissionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.permissionLabel h3 {
+  font-weight: 900;
+  font-size: 1.125rem;
+  text-transform: uppercase;
+  line-height: 1;
+  margin: 0;
+}
+
+.permissionLabel p {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  opacity: 0.4;
+  margin: 0;
+}
+
+/* BUTTONS */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 900;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  border: 2px solid #000000;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.btnIdle {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.btnIdle:hover {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.btnActive {
+  background-color: #000000;
+  color: #ffffff;
+  cursor: default;
+}
+
+/* ERROR BANNER */
+.errorBanner {
+  background-color: #dc2626;
+  color: #ffffff;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  text-align: center;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.errorBanner p {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* FOOTER */
+.footer {
+  width: 100%;
+  max-width: 24rem;
+  padding-bottom: 2.5rem;
+}
+
+.ctaBtn {
+  width: 100%;
+  padding: 1.25rem;
+  border-radius: 9999px;
+  background-color: #000000;
+  color: #ffffff;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+}
+
+.ctaBtn:disabled {
+  opacity: 0.1;
+  filter: grayscale(100%);
+  cursor: not-allowed;
+}
+
+.ctaBtn:not(:disabled):active {
+  transform: scale(0.95);
+}

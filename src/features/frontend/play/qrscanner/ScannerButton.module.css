@@ -1,0 +1,30 @@
+.btnWrapper {
+  /* Swapped 'right' for 'left' from your Speedometer CSS */
+  position: fixed; 
+  bottom: 25px;    
+  left: 25px; 
+  z-index: 9999;
+  background: #ff0000; /* Red version of the white button */
+  border-radius: 50%;
+  width: 65px;
+  height: 65px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+}
+
+.btnWrapper:active {
+  transform: scale(0.9);
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+  stroke: white;
+}

@@ -1,0 +1,100 @@
+.container {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cameraVideo {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.uiOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.scanBox {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  /* Glassy white border matching the screenshot */
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 48px;
+  background: transparent;
+  /* Smooth dimming of the background */
+  box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.65);
+  z-index: 15;
+}
+
+.hand {
+  position: absolute;
+  width: 600px; 
+  height: 600px;
+  z-index: 20;
+  pointer-events: none;
+  will-change: transform, opacity;
+  transform: translateZ(0); 
+  transition: transform 0.9s cubic-bezier(0.15, 0.85, 0.35, 1), opacity 0.6s ease;
+}
+
+.leftHand {
+  top: -410px;
+  left: -310px;
+}
+
+.rightHand {
+  bottom: -410px;
+  right: -310px;
+}
+
+.handHidden {
+  opacity: 0;
+}
+
+.leftHand.handHidden { transform: translate(-50px, -50px); }
+.rightHand.handHidden { transform: translate(50px, 50px); }
+
+.handVisible {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.handImage {
+  object-fit: contain;
+}
+
+.closeBtn {
+  position: absolute;
+  bottom: 50px;
+  width: 65px;
+  height: 65px;
+  background: #ff5c5c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease;
+}
+
+.closeBtn:active {
+  transform: scale(0.9);
+}
