@@ -10,6 +10,7 @@ import QRMarkers from "@/features/frontend/play/Markers/QRcodeMarkers/QRcodeMark
 import Speedometer from "@/features/frontend/play/Speedometer/Speedometer";
 import ScannerButton from "@/features/frontend/play/qrscanner/ScannerButton";
 import QRScanner from "@/features/frontend/play/qrscanner/qrscanner";
+import { usePlayerCoords } from "@/app/en/play/coord";
 
 function PlayContent() {
   const mapCanvasRef = useRef<MapCanvasHandle | null>(null);
@@ -19,6 +20,8 @@ function PlayContent() {
 
   const searchParams = useSearchParams();
   const eventIdFromUrl = searchParams.get("event") || undefined;
+  
+  usePlayerCoords();
 
   useEffect(() => {
     const interval = setInterval(() => {

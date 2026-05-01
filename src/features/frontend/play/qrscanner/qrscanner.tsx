@@ -18,7 +18,7 @@ const QRScanner = ({ eventId, onClose }: QRScannerProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [unlockedMarker, setUnlockedMarker] = useState<QRcodeMarkerData | null>(null);
 
-  const activeEventId = eventId || "ghumante";
+  const activeEventId = eventId || "test";
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);

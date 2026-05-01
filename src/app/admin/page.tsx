@@ -29,6 +29,14 @@ export default function AdminPage() {
       >
         Prize Distribution
       </button>
+
+      <button 
+        className={styles.adminBtn} 
+        onClick={() => router.push('/admin/adminleaderboard')}
+      >
+        Leaderboard
+      </button>
+
     </div>
   );
 }
