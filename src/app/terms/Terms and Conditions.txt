@@ -1,0 +1,783 @@
+# Terms and Conditions
+
+**Last Updated:** February 2, 2026  
+**Effective Date:** February 2, 2026
+
+---
+
+## Welcome to Ghumante Yuwa
+
+These Terms and Conditions ("Terms", "TOS") constitute a legally binding agreement between you ("User", "You", "Your") and **La Garau Pvt. Ltd.** ("Company", "We", "Us", "Our"), the operator of the Ghumante Yuwa mobile application ("App", "Service", "Platform").
+
+By creating an account, clicking "I Agree", or using the App in any capacity, you acknowledge that you have read, understood, and agree to be bound by these Terms and our Privacy Policy. **If you do not agree to these Terms, you must immediately cease using the App and delete your account.**
+
+---
+
+## 1. Definitions & Interpretation
+
+For the purposes of these Terms, the following definitions apply:
+
+- **"App"** or **"Service"**: The Ghumante Yuwa mobile application, including all features, content, and functionality.
+- **"User"**: Any individual who creates an account or accesses the App.
+- **"Minor"**: Any individual under 18 years of age as defined by Nepalese law.
+- **"Guardian"**: A parent or legal guardian of a Minor User who has provided consent for the Minor's use of the App.
+- **"Sponsor"**: A third-party business or entity that provides rewards, promotions, or benefits to Users through the App.
+- **"Reward"**: Any promotional benefit, discount, voucher, gift, or item offered by a Sponsor through the App.
+- **"Promotional Benefit"**: Any complimentary advantage, prize, or incentive offered to Users without requiring payment or purchase.
+- **"Community Mode"**: The feature allowing Users' anonymized and delayed exploration data to be displayed on the public community map.
+- **"Private Mode"**: The setting that prevents a User's exploration activity from appearing on the community map.
+- **"Points"**: Non-monetary, non-transferable virtual credits earned through exploration activities within the App. Points have no cash value and cannot be exchanged for money.
+- **"As Is"**: The App is provided in its current state without warranties of any kind.
+- **"Discretion"**: The Company's sole and absolute right to make decisions regarding the App, rewards, and user accounts.
+- **"Eligibility"**: Meeting the minimum requirements to lawfully use the App.
+
+---
+
+## 2. Acceptance of Terms
+
+### 2.1 Binding Agreement
+These Terms form a binding legal contract between You and La Garau Pvt. Ltd. This agreement becomes effective upon:
+- Creating an account in the App
+- Clicking any "I Agree", "Accept", or similar button
+- Accessing or using any feature of the App
+- Continued use of the Service after Terms are updated
+
+### 2.2 Requirement to Accept
+**You may not use the App unless you accept these Terms in full.** If you disagree with any provision, you must:
+- Refrain from creating an account
+- Immediately cease using the App
+- Delete your account if already created
+
+### 2.3 Binding Nature
+By accepting these Terms, you acknowledge that this agreement is as enforceable as any written contract signed by you.
+
+---
+
+## 3. Eligibility & User Representations
+
+### 3.1 Minimum Age Requirement
+You must be **at least 16 years old** to use Ghumante Yuwa. By creating an account, you represent and warrant that you meet this age requirement.
+
+### 3.2 Minor Users (Ages 16-17)
+If you are 16 or 17 years old:
+- You must have obtained **verifiable consent from a parent or legal guardian** before using the App
+- You represent that the guardian email address provided during registration is accurate and that your guardian has approved your use
+- Your guardian accepts legal responsibility for your actions on the App
+
+### 3.3 User Representations
+By using the App, you represent and warrant that:
+- All information you provide (including name, age, email, and guardian contact) is **accurate, current, and complete**
+- You will use the App only for **lawful purposes** in compliance with all applicable laws and regulations
+- You have the **legal capacity** to enter into this binding agreement
+- You are not prohibited by law from using the App
+- You will not violate any terms of this agreement
+
+### 3.4 Verification Rights
+The Company reserves the right to verify your age, identity, or guardian consent at any time. Failure to provide requested verification may result in account suspension or termination.
+
+---
+
+## 4. Account Registration & Responsibility
+
+### 4.1 Google Authentication
+Ghumante Yuwa uses **Google Sign-In** for account authentication. By creating an account:
+- You authorize the App to access your Google identity information (name, email, profile picture)
+- You agree to Google's terms of service and privacy policies
+- You acknowledge that the security of your Google account affects the security of your App account
+
+### 4.2 Account Ownership & Control
+- Your account is **personal to you** and may not be shared, sold, or transferred to any other person
+- You are solely responsible for maintaining the confidentiality and security of your account credentials
+- You must not allow others to access your account under any circumstances
+
+### 4.3 Responsibility for Account Activity
+**You are fully responsible for all activities that occur under your account**, including:
+- All location data generated
+- All points earned or lost
+- All interactions with sponsors or rewards
+- Any violations of these Terms
+
+This responsibility applies regardless of whether the activity was authorized by you.
+
+### 4.4 Prohibited Account Practices
+You may not:
+- Create multiple accounts for the same person
+- Share your account credentials with others
+- Sell, trade, or transfer your account
+- Use another person's account without permission
+- Create accounts using false or misleading information
+
+### 4.5 Account Security
+If you suspect unauthorized access to your account, you must immediately notify us at **support@ghumanteyuwa.com** and change your Google account password.
+
+---
+
+## 5. Intellectual Property (IP) Protection
+
+### 5.1 Ownership of App Content
+La Garau Pvt. Ltd. retains **exclusive ownership** of all intellectual property rights in and to the App, including but not limited to:
+- The geographic block system and map visualization technology
+- The points calculation and reward distribution algorithms
+- Game mechanics, exploration logic, and unlock systems
+- All software code, databases, and technical infrastructure
+- User interface design, visual elements, and graphics
+- Branding, trademarks, logos, and the "Ghumante Yuwa" name
+- All content, text, images, and audiovisual materials
+
+### 5.2 Prohibited Uses of IP
+You expressly agree **NOT** to:
+- **Scrape, extract, or download** App data, maps, or user information
+- **Reverse engineer, decompile, or disassemble** any part of the App
+- **Create derivative works**, clones, or competing products based on the App
+- **Copy, reproduce, or redistribute** any App content without written permission
+- **Remove, obscure, or alter** any copyright notices, trademarks, or proprietary marks
+- **Use the App's intellectual property** for commercial purposes
+
+### 5.3 Enforcement Rights
+La Garau Pvt. Ltd. reserves all rights to:
+- Pursue legal action against intellectual property violations
+- Seek injunctive relief and damages for unauthorized use
+- Enforce patents, copyrights, trademarks, and trade secrets
+
+### 5.4 User-Generated Data
+By using the App, you grant La Garau Pvt. Ltd. a **non-exclusive, worldwide, royalty-free license** to use your anonymized exploration data for:
+- Displaying community maps and aggregate statistics
+- Improving the App and developing new features
+- Marketing and promotional purposes
+
+This license survives termination of your account.
+
+---
+
+## 6. License to Use the App
+
+### 6.1 Limited License Grant
+Subject to your compliance with these Terms, La Garau Pvt. Ltd. grants you a **limited, non-exclusive, non-transferable, revocable license** to access and use the App solely for your personal, non-commercial enjoyment.
+
+### 6.2 License Restrictions
+This license **does not** permit you to:
+- Use the App for any commercial purpose or financial gain
+- Sublicense, rent, lease, or distribute the App to others
+- Modify, adapt, or create derivative works
+- Access the App through automated means (bots, scripts)
+- Use the App in any way that violates applicable laws
+
+### 6.3 Revocation
+This license may be revoked by the Company at any time, with or without cause, by terminating your account or discontinuing the Service.
+
+---
+
+## 7. Physical Safety & Risk Assumption
+
+### 7.1 Assumption of Risk
+**YOU ACKNOWLEDGE AND ACCEPT FULL RESPONSIBILITY FOR ALL REAL-WORLD RISKS** associated with using the App, including but not limited to:
+- Physical injury, illness, or death
+- Accidents, collisions, or falls
+- Encounters with dangerous individuals, animals, or environments
+- Adverse weather conditions or natural disasters
+- Property damage or loss of personal belongings
+
+### 7.2 Situational Awareness Obligation
+While using the App, you **MUST**:
+- **Remain aware of your surroundings at all times**
+- **Obey all traffic laws, signals, and pedestrian regulations**
+- **Avoid restricted, dangerous, or prohibited areas** (military zones, construction sites, private property)
+- **Never use the App while driving, cycling, or operating machinery**
+- **Exercise reasonable judgment** regarding personal safety
+
+### 7.3 No Liability for Physical Harm
+**LA GARAU PVT. LTD. SHALL NOT BE LIABLE** for any physical injury, death, property damage, or other harm resulting from your use of the App, regardless of whether such harm was foreseeable.
+
+### 7.4 Emergency Services
+The App is **not** a substitute for emergency services. In case of emergency, immediately contact local authorities (dial 100 for police in Nepal, 102 for ambulance).
+
+---
+
+## 8. Prohibited Use & Conduct
+
+### 8.1 Trespassing & Restricted Areas
+**Users are STRICTLY PROHIBITED from:**
+- Trespassing on private property to unlock blocks or collect rewards
+- Entering restricted government or military zones, installations, or facilities
+- Accessing dangerous locations (construction sites, railways, cliffs, flood zones)
+- Entering areas marked "No Entry", "Authorized Personnel Only", or similar warnings
+- Violating any local laws or regulations regarding access to public or private spaces
+
+### 8.2 Illegal Activities
+**Users must NOT use the App to:**
+- Participate in, organize, or facilitate illegal gatherings, protests, or demonstrations
+- Engage in criminal activity of any kind
+- Coordinate illegal actions with other users
+- Evade law enforcement or surveillance
+
+### 8.3 Harassment & Stalking
+**Users are STRICTLY PROHIBITED from:**
+- Stalking, following, or surveilling other users using location data
+- Harassing, threatening, or intimidating other users
+- Using the community map to identify or track individuals
+- Sharing others' personal information without consent
+
+### 8.4 Prohibited Use of the App
+**Users must NOT:**
+- Use the App while driving, cycling, or operating vehicles or machinery
+- Enter hazardous areas (active roadways, railway tracks, bodies of water)
+- Use the App to commit or facilitate crimes
+- Interfere with emergency services or response operations
+
+### 8.5 Enforcement
+Violation of any prohibited conduct may result in:
+- Immediate account suspension or termination
+- Forfeiture of all points and rewards
+- Legal action and cooperation with law enforcement
+- Civil liability for damages caused
+
+**YOU AGREE TO INDEMNIFY LA GARAU PVT. LTD. FOR ANY CLAIMS ARISING FROM YOUR PROHIBITED CONDUCT.**
+
+---
+
+## 9. Location Accuracy Disclaimer
+
+### 9.1 GPS Limitations
+**GPS AND LOCATION SERVICES ARE NOT PERFECTLY ACCURATE.** Location data may be affected by:
+- Device hardware limitations
+- Satellite signal strength and availability
+- Urban environments, buildings, and terrain
+- Weather conditions and atmospheric interference
+- Network connectivity issues
+
+### 9.2 No Guarantee of Precision
+The Company **does not guarantee**:
+- That GPS coordinates will be accurate within any specific margin of error
+- That all blocks will unlock successfully when visited
+- That the App will function correctly in all geographic areas
+- Consistent performance across all devices or operating systems
+
+### 9.3 Unlock Failures
+**You acknowledge and accept** that:
+- Blocks may fail to unlock due to GPS inaccuracy or technical issues
+- The App may not recognize that you have physically visited a location
+- Location verification may be delayed or unavailable
+
+### 9.4 No Compensation
+**THE COMPANY WILL NOT PROVIDE REFUNDS, COMPENSATION, OR ALTERNATIVE REWARDS** for:
+- Missed rewards due to GPS inaccuracy
+- Technical failures preventing block unlocks
+- Any loss of points or progress due to location issues
+
+---
+
+## 10. Community Mode & User-Generated Data
+
+### 10.1 Community Map Display
+When **Community Mode** is enabled:
+- Your exploration paths and unlocked areas may be displayed on the public community map
+- All displayed data is **anonymized** (not linked to your name or personal identity)
+- All location data is **delayed by 24 hours** to prevent real-time tracking
+
+### 10.2 License to Display
+By using Community Mode, you grant La Garau Pvt. Ltd. a **perpetual, irrevocable, worldwide, royalty-free license** to:
+- Display your anonymized exploration data on community maps
+- Use aggregated user data for analytics and improvements
+- Share statistical information publicly (e.g., "10,000 blocks unlocked in Kathmandu")
+
+### 10.3 Prohibition on Misuse
+**Users may NOT:**
+- Attempt to identify or de-anonymize other users from community map data
+- Use community data to stalk, harass, or track individuals
+- Scrape or extract community map data for unauthorized purposes
+
+### 10.4 Private Mode Option
+Users may **opt out of Community Mode** at any time by enabling **Private Mode** in settings. In Private Mode:
+- Your exploration activity will **not** appear on the community map
+- You will continue to earn points and unlock blocks normally
+- Your personal exploration map remains accessible only to you
+
+### 10.5 Safety-Based Disabling
+The Company reserves the right to disable Community Mode for any user if:
+- There is evidence of harassment, stalking, or misuse
+- The user's displayed data poses a safety risk
+- Necessary for legal compliance or user protection
+
+---
+
+## 11. Anti-Cheating & Fair Use Policy
+
+### 11.1 Prohibited Cheating Methods
+**The following actions constitute cheating and are STRICTLY PROHIBITED:**
+- **GPS Spoofing**: Using software or hardware to fake your location
+- **Mock Locations**: Enabling developer options or mock location apps
+- **Emulators**: Running the App on Android emulators or virtual devices
+- **Bots & Automation**: Using scripts, macros, or automated tools to unlock blocks
+- **Modified Apps**: Using altered, hacked, or unofficial versions of the App
+- **Account Sharing**: Sharing accounts to accumulate points from multiple physical locations
+- **Exploits**: Intentionally exploiting bugs, glitches, or vulnerabilities for unfair advantage
+
+### 11.2 Detection & Monitoring
+La Garau Pvt. Ltd. employs:
+- Automated detection systems to identify anomalous location patterns
+- Manual review of suspicious accounts
+- Third-party anti-cheat technologies
+- User reporting mechanisms
+
+### 11.3 Consequences of Cheating
+If you are found to be cheating, the Company may, **at its sole discretion**:
+- **Immediately terminate your account** without warning or appeal
+- **Void all points, progress, and rewards** (including unredeemed rewards)
+- **Ban your device** from creating new accounts
+- **Report violations** to Google Play Store or Apple App Store
+- **Pursue legal action** for damages or breach of contract
+
+### 11.4 No Tolerance Policy
+**There is NO tolerance for cheating.** All enforcement decisions are **final and non-negotiable**. The Company is not obligated to provide evidence or explanations for bans.
+
+### 11.5 Fair Use Commitment
+By using the App, you commit to playing fairly and respecting the integrity of the game for all users.
+
+---
+
+## 12. Points System Disclaimer
+
+### 12.1 Nature of Points
+**Points in Ghumante Yuwa:**
+- Are **virtual, non-monetary credits** with no real-world cash value
+- Are **not property** and do not constitute your asset or entitlement
+- Are **non-transferable** and cannot be sold, traded, gifted, or bequeathed
+- Are **not redeemable for money** under any circumstances
+- Have no value outside the App
+
+### 12.2 No Ownership Rights
+**You do not own your points.** Points are merely a record-keeping mechanism within the App. The Company retains full control over the points system.
+
+### 12.3 Adjustment & Reset Rights
+The Company reserves the **unilateral right** to:
+- Adjust, reduce, or increase your points balance at any time
+- Reset all user points to zero (e.g., for seasonal events)
+- Modify the points earning structure or requirements
+- Change the value or function of points without notice
+
+### 12.4 No Compensation Upon Loss
+**You are not entitled to compensation** if:
+- Your points are reduced or eliminated due to technical issues
+- The points system is modified or discontinued
+- Your account is terminated (points are forfeited)
+- Bugs or errors cause point loss
+
+### 12.5 Promotional Use Only
+Points exist solely to enhance user engagement and enjoyment. They have no inherent economic value and are not a form of virtual currency.
+
+---
+
+## 13. Rewards & Promotions
+
+### 13.1 Nature of Rewards
+Rewards offered through Ghumante Yuwa are:
+- **Promotional benefits** provided at the Company's or Sponsor's discretion
+- **Complimentary** and require no purchase or payment to obtain
+- **Limited in quantity** and subject to availability
+- **Discretionary** and may be offered to some users but not others
+
+### 13.2 No Purchase Required
+**No purchase, payment, or monetary consideration is required** to participate in the App or receive rewards. Rewards are promotional incentives only.
+
+### 13.3 Sponsor Control
+Rewards are provided by **third-party Sponsors**, not by La Garau Pvt. Ltd. Sponsors have **sole control** over:
+- The type, value, and availability of rewards
+- Redemption requirements and restrictions
+- Expiration dates and terms of use
+- Fulfillment and delivery
+
+### 13.4 No Guarantee of Rewards
+**The Company does NOT guarantee:**
+- That any specific reward will be available to you
+- That sufficient rewards will be in stock when you attempt to redeem
+- That you will qualify for or receive any rewards
+- That rewards will meet your expectations regarding quality or value
+
+### 13.5 Reward Modifications
+Sponsors and the Company may, **without notice:**
+- Add, remove, or modify available rewards
+- Change redemption requirements or point thresholds
+- Discontinue reward programs entirely
+- Substitute rewards with alternatives of equal or lesser value
+
+### 13.6 Forfeiture
+Rewards may be forfeited if:
+- Your account is terminated or suspended
+- You violate these Terms
+- You engage in cheating or prohibited conduct
+- The reward expires before redemption
+
+**Forfeited rewards will not be replaced or compensated.**
+
+---
+
+## 14. Complimentary Benefits (Non-Gambling Clause)
+
+### 14.1 No Gambling or Lottery
+Ghumante Yuwa is **not a gambling, betting, or lottery service.** The App does not involve:
+- Monetary stakes or wagers
+- Games of chance for money
+- Paid entries into drawings or raffles
+- Any form of financial consideration to participate
+
+### 14.2 No Price to Play
+**There is no cost, fee, or price to:**
+- Download or install the App
+- Create an account
+- Explore and unlock blocks
+- Earn points
+- Participate in promotions
+
+The App is **entirely free to use.**
+
+### 14.3 Discretionary Allocation
+Rewards and benefits are:
+- **Selected at the discretion** of the Company or Sponsors
+- **Not guaranteed** to any user
+- **Not based on random chance** in the gambling sense
+- **Promotional gifts** with no consideration required
+
+### 14.4 Legal Compliance
+This structure ensures compliance with Nepal's laws prohibiting gambling and lotteries.
+
+### 14.5 Program Changes
+Reward programs and promotional benefits may **change or terminate at any time** without notice or liability.
+
+---
+
+## 15. Sponsor Relationships Disclaimer
+
+### 15.1 Third-Party Sponsors
+**Sponsors are independent third parties**, not employees, agents, or representatives of La Garau Pvt. Ltd.
+
+### 15.2 No Responsibility for Sponsor Actions
+**The Company is NOT responsible for:**
+- The quality, safety, or legality of Sponsor products or services
+- Fulfillment, delivery, or availability of rewards
+- Customer service or support provided by Sponsors
+- Sponsor business practices, policies, or compliance with laws
+- Any harm, injury, or loss resulting from Sponsor interactions
+
+### 15.3 Direct Relationship
+**Any issues with rewards or Sponsors must be resolved directly between you and the Sponsor.** The Company has no obligation to mediate disputes or provide refunds.
+
+### 15.4 Sponsor Terms Apply
+When you redeem a reward, you agree to the **Sponsor's own terms and conditions**, which may include:
+- Usage restrictions or expiration dates
+- Redemption procedures
+- Privacy policies and data collection
+- Liability limitations
+
+### 15.5 Sponsor Availability
+Sponsors may withdraw from the platform at any time. The Company is not liable for discontinuation of Sponsor partnerships.
+
+---
+
+## 16. Minor Users & Guardian Responsibility
+
+### 16.1 Guardian Consent Requirement
+If you are a **Minor (16-17 years old)**, you represent that:
+- A parent or legal guardian has **reviewed and approved** your use of the App
+- The guardian email provided during registration is accurate and belongs to your actual guardian
+- Your guardian understands and accepts these Terms on your behalf
+
+### 16.2 Guardian Legal Responsibility
+**The guardian of a Minor User accepts FULL LEGAL RESPONSIBILITY for:**
+- The Minor's actions, conduct, and compliance with these Terms
+- Any data the Minor shares or generates through the App
+- All physical risks assumed by the Minor while using the App (see Section 7)
+- Any damages, injuries, or liabilities resulting from the Minor's use
+
+### 16.3 Guardian Supervision
+**Guardians are expected to:**
+- Monitor their Minor's use of the App
+- Educate the Minor about safety, privacy, and responsible behavior
+- Ensure the Minor does not engage in prohibited conduct
+
+### 16.4 No Company Supervision
+**La Garau Pvt. Ltd. has NO OBLIGATION to:**
+- Supervise Minor Users
+- Monitor conversations or interactions
+- Prevent Minors from accessing certain features
+- Enforce parental controls
+
+Guardians are solely responsible for supervising their children.
+
+### 16.5 Account Termination
+If the Company suspects that a Minor is using the App without guardian consent, the account may be immediately suspended or terminated.
+
+---
+
+## 17. Privacy & Data Reference
+
+### 17.1 Privacy Policy Incorporation
+Your use of the App is also governed by our **Privacy Policy**, which is **incorporated by reference** into these Terms.
+
+### 17.2 Data Practices
+All data collection, storage, and usage is detailed in the Privacy Policy. By accepting these Terms, you also accept the Privacy Policy.
+
+### 17.3 Consistency
+In the event of any conflict between these Terms and the Privacy Policy regarding data practices, the Privacy Policy shall prevail.
+
+### 17.4 Access Privacy Policy
+The Privacy Policy is available at: **[link to privacy policy page]**
+
+You are encouraged to review the Privacy Policy carefully to understand how your information is handled.
+
+---
+
+## 18. "As Is" & "As Available" Service Disclaimer
+
+### 18.1 No Warranties
+**THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND**, either express or implied, including but not limited to:
+- Implied warranties of merchantability
+- Fitness for a particular purpose
+- Non-infringement
+- Accuracy, reliability, or completeness
+- Uninterrupted or error-free operation
+
+### 18.2 No Uptime Guarantee
+The Company **does not guarantee**:
+- That the App will be available at all times or in all locations
+- That servers will be operational without interruption
+- That features will work as expected
+- Compatibility with all devices or operating systems
+
+### 18.3 Technical Issues
+The App may experience:
+- Downtime for maintenance or updates
+- Bugs, glitches, or errors
+- Data loss or corruption
+- Compatibility issues with device updates
+
+**You accept these risks by using the App.**
+
+### 18.4 Right to Modify or Discontinue
+La Garau Pvt. Ltd. reserves the **absolute right** to:
+- Change, suspend, or discontinue any feature or the entire Service at any time
+- Modify the App's functionality, design, or content without notice
+- Terminate the App permanently without liability
+
+**You are not entitled to compensation if the App is modified or discontinued.**
+
+---
+
+## 19. Extreme Limitation of Liability
+
+### 19.1 Scope of Liability Exclusion
+**TO THE MAXIMUM EXTENT PERMITTED BY LAW, LA GARAU PVT. LTD., ITS OFFICERS, DIRECTORS, EMPLOYEES, AGENTS, AND AFFILIATES SHALL NOT BE LIABLE FOR:**
+
+- **Personal injury, illness, or death** resulting from your use of the App
+- **Device loss, damage, theft, or malfunction**
+- **Data loss, corruption, or unauthorized access**
+- **Third-party misconduct**, including actions by other users or Sponsors
+- **Emotional distress, psychological harm, or mental anguish**
+- **Lost opportunities, missed rewards, or failure to unlock blocks**
+- **Financial losses** of any kind, direct or indirect
+- **Consequential, incidental, punitive, or special damages**
+
+### 19.2 Indirect & Consequential Damages
+Even if the Company has been advised of the possibility of such damages, **we are not liable for any indirect, incidental, consequential, or punitive damages** arising from your use of the App.
+
+### 19.3 Maximum Liability Cap
+In no event shall La Garau Pvt. Ltd.'s **total cumulative liability** to you for all claims arising from your use of the App exceed:
+- **NPR 1,000 (One Thousand Nepalese Rupees)**, or
+- **The amount you have paid to us (if any)** in the 12 months preceding the claim
+
+**Whichever is less.**
+
+### 19.4 Essential Purpose
+You acknowledge that this limitation of liability is an **essential element** of the agreement between you and the Company. The App would not be offered without these limitations.
+
+### 19.5 Jurisdictional Variations
+Some jurisdictions do not allow the exclusion of certain warranties or limitations on liability. In such jurisdictions, our liability is limited to the maximum extent permitted by law.
+
+---
+
+## 20. Indemnification
+
+### 20.1 Agreement to Indemnify
+**You agree to indemnify, defend, and hold harmless** La Garau Pvt. Ltd., its officers, directors, employees, agents, affiliates, successors, and assigns from and against any and all:
+- Claims, demands, actions, or lawsuits
+- Losses, damages, liabilities, settlements, or judgments
+- Costs, expenses, or attorney's fees
+
+**Arising from or related to:**
+
+### 20.2 Indemnification Triggers
+- Your **misuse of the App** or violation of these Terms
+- Your **violation of any law or regulation**
+- Your **infringement** of any intellectual property or proprietary rights
+- Your **prohibited conduct** (trespassing, stalking, cheating, etc.)
+- **Harm caused to others** as a result of your actions
+- Your **failure to supervise Minor Users** (if you are a guardian)
+- **Claims by third parties** (including Sponsors) arising from your conduct
+
+### 20.3 Defense Cooperation
+You agree to **cooperate fully** with the Company in the defense of any claim. The Company reserves the right to assume exclusive control of the defense at its own expense.
+
+### 20.4 Survival
+This indemnification obligation **survives termination** of your account and these Terms.
+
+---
+
+## 21. Account Suspension & Termination
+
+### 21.1 Termination by the Company
+La Garau Pvt. Ltd. reserves the **absolute right** to:
+- **Suspend or terminate your account** at any time, for any reason or no reason, **with or without notice**
+- **Permanently ban your device** from accessing the App
+- **Refuse service** to you in the future
+
+Reasons for termination may include, but are not limited to:
+- Violation of these Terms
+- Cheating or prohibited conduct
+- Inactivity for extended periods
+- Technical or security concerns
+- Discretionary business decisions
+
+### 21.2 Effect of Termination
+Upon termination:
+- Your **access to the App is immediately revoked**
+- All **points, progress, and rewards are forfeited** without compensation
+- You **lose the right** to redeem any unredeemed rewards
+- Your **exploration data** may be retained for legal compliance (see Privacy Policy)
+
+### 21.3 No Compensation
+**You are not entitled to any refund, compensation, or reimbursement** upon termination, regardless of the reason.
+
+### 21.4 Termination by You
+You may terminate your account at any time by:
+- Navigating to **Settings > Account > Delete My Account**, or
+- Contacting us at **support@ghumanteyuwa.com** with a deletion request
+
+Upon voluntary termination, the same effects apply as in Section 21.2.
+
+### 21.5 Survival of Terms
+The following provisions **survive termination**:
+- Sections 5 (Intellectual Property), 19 (Limitation of Liability), 20 (Indemnification), 23 (Governing Law), and any other provisions that by their nature should survive.
+
+---
+
+## 22. Modifications to Terms
+
+### 22.1 Right to Update
+La Garau Pvt. Ltd. reserves the right to **modify, amend, or update these Terms at any time**, at its sole discretion, without prior notice.
+
+### 22.2 Notification of Changes
+When Terms are updated:
+- The **"Last Updated"** date at the top of this document will be changed
+- We may (but are not obligated to) notify you via:
+  - In-app notification
+  - Email to your registered address
+  - Public announcement
+
+### 22.3 Acceptance by Continued Use
+**Your continued use of the App after changes are posted constitutes acceptance of the updated Terms.** If you do not agree to the changes, you must:
+- Immediately cease using the App
+- Delete your account
+
+### 22.4 Versioning
+Updated versions of the Terms will be accessible within the App and on our website. You are encouraged to review the Terms periodically.
+
+---
+
+## 23. Governing Law & Jurisdiction
+
+### 23.1 Applicable Law
+These Terms and your use of the App are governed by and construed in accordance with **the laws of Nepal**, including but not limited to:
+- The **Contract Act, 2056 (2000)**
+- The **Electronic Transactions Act, 2063 (2008)**
+- The **Consumer Protection Act, 2075 (2018)**
+- Any other applicable statutes and regulations
+
+### 23.2 Exclusive Jurisdiction
+**Any disputes, claims, or legal proceedings** arising from or related to these Terms or your use of the App shall be resolved exclusively in the **competent courts of Kathmandu, Nepal.**
+
+### 23.3 Waiver of Other Jurisdictions
+By accepting these Terms, you **irrevocably waive any right** to bring claims in any other jurisdiction or venue.
+
+### 23.4 Language
+In the event of translation, the **English version** of these Terms shall prevail in case of any discrepancy or conflict.
+
+---
+
+## 24. Severability
+
+### 24.1 Invalid Provisions
+If any provision of these Terms is found by a court of competent jurisdiction to be **invalid, illegal, or unenforceable**, such provision shall be:
+- **Severed** from these Terms
+- Modified to the minimum extent necessary to make it enforceable, or
+- Removed entirely if modification is not possible
+
+### 24.2 Remaining Terms
+The **invalidity of one provision does not affect the validity or enforceability of the remaining provisions**, which shall remain in full force and effect.
+
+### 24.3 Reformation
+The parties agree that any invalid provision should be reformed to reflect the original intent to the greatest extent possible under applicable law.
+
+---
+
+## 25. Entire Agreement
+
+### 25.1 Complete Understanding
+These Terms, together with the **Privacy Policy**, constitute the **entire agreement** between you and La Garau Pvt. Ltd. regarding your use of the App.
+
+### 25.2 Supersedes Prior Agreements
+These Terms **supersede and replace** all prior or contemporaneous:
+- Understandings, agreements, or representations
+- Oral or written communications
+- Proposals or negotiations
+
+### 25.3 No Reliance on Other Statements
+You acknowledge that you have **not relied on any statement, representation, or promise** not expressly set forth in these Terms or the Privacy Policy.
+
+### 25.4 Modifications in Writing
+No modification, amendment, or waiver of these Terms shall be valid unless **made in writing** and posted as an updated version of this document.
+
+---
+
+## 26. Company Information & Contact
+
+### 26.1 App Details
+- **Application Name:** Ghumante Yuwa
+- **Owner/Operator:** La Garau Pvt. Ltd.
+- **Registered Jurisdiction:** Nepal
+- **Principal Office:** Kathmandu, Nepal
+
+### 26.2 Contact Information
+For questions, concerns, or support regarding these Terms or the App, please contact us at:
+
+**Email:** support@ghumanteyuwa.com  
+**Response Time:** We aim to respond within 7 business days.
+
+### 26.3 Legal Notices
+Any legal notices or formal communications to La Garau Pvt. Ltd. should be sent to the above email address with the subject line: **"Legal Notice – Terms of Service"**
+
+---
+
+## Acknowledgment & Agreement
+
+**BY CREATING AN ACCOUNT, CLICKING "I AGREE", OR USING THE APP, YOU ACKNOWLEDGE THAT:**
+
+1. You have **read and understood** these Terms in their entirety
+2. You **agree to be legally bound** by all provisions
+3. You have the **legal capacity** to enter into this agreement
+4. You **accept all risks** associated with using the App, including physical risks
+5. You understand that **violation of these Terms may result in account termination, legal action, and personal liability**
+
+**IF YOU DO NOT AGREE TO THESE TERMS, DO NOT USE THE APP.**
+
+---
+
+## Final Statement
+
+La Garau Pvt. Ltd. is committed to providing a safe, enjoyable, and legally compliant platform for exploring Nepal. These Terms are designed to protect both users and the Company while fostering a vibrant community of explorers.
+
+**Explore responsibly. Respect the law. Enjoy the journey.**
+
+🌄 **Ghumante Yuwa** – Your Adventure, Your Responsibility.
+
+---
+
+**© 2026 La Garau Pvt. Ltd. All Rights Reserved.**

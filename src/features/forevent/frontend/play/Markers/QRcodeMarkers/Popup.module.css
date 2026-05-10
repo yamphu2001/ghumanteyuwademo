@@ -1,0 +1,225 @@
+/* Popup.module.css */
+
+.sheetOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  padding: 16px;
+}
+
+.sheet {
+  position: relative;
+  background: #ffffff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+  animation: popIn 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.18);
+}
+
+.sheetSuccess { background: #ffffff; }
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.88); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.handle { display: none; }
+
+/* ── Close button: only for far/nearby sheet ── */
+.sheetClose {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: #ffffff;
+  border: 1px solid #dc2626;
+  border-radius: 999px;
+  font-size: 18px;
+  color: #000000;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 10;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheetClose:hover { background: rgba(220, 38, 38, 0.08); }
+
+/* ── Timer + Skip: now inline below description, not absolute ── */
+.countdownArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.countdownRingWrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.countdownSvg {
+  width: 40px;
+  height: 40px;
+  transform: rotate(-90deg);
+}
+
+.countdownTrack {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.18);
+  stroke-width: 3;
+}
+
+.countdownFill {
+  fill: none;
+  stroke: #dc2626;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.9s linear;
+}
+
+.countdownNum {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #166534;
+}
+
+.skipBtn {
+  background: #ffffff;
+  border: 1.5px solid #dc2626;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.skipBtn:hover { background: rgba(220, 38, 38, 0.08); color: #000000; }
+
+.successImgWrap {
+  position: relative;
+  width: 100%;
+  height: 180px;
+}
+
+.successImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.successImgOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, #ffffff);
+  pointer-events: none;
+}
+
+.sheetBody {
+  padding: 20px 20px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.successBadge {
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+
+.sheetTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+.sheetText {
+  font-size: 14px;
+  color: #000000;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.nearbyIconWrap {
+  width: 56px;
+  height: 56px;
+  background: #ffffff;
+  border: 1px solid #dc2626;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nearbyIcon { font-size: 26px; }
+
+.primaryBtn {
+  width: 100%;
+  padding: 14px;
+  background: #000000;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.primaryBtn:hover { background: #4b5563; }
+
+.pointsBadge {
+  background-color: #dc2626;
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+.successHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}

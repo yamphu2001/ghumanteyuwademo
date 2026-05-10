@@ -1,0 +1,72 @@
+.menuContainer {
+  position: fixed;
+  bottom: 30px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Precise Side & Center Anchoring */
+.anchorLeft { left: 30px; }
+.anchorRight { right: 30px; }
+.anchorCenter { 
+  left: 50%; 
+  transform: translateX(-50%); 
+}
+
+.relativeWrapper {
+  position: relative;
+  pointer-events: auto;
+  width: 70px;
+  height: 70px;
+}
+
+.smallButton, .scanButton {
+  position: absolute;
+  bottom: 0;
+  background-color: #ff2d17;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+/* Internal Alignment Classes - these position buttons within the relative wrapper */
+.leftAlign { 
+  left: 0; 
+}
+
+.rightAlign { 
+  right: 0; 
+}
+
+.centerAlign { 
+  left: -35px;  /* Half of 70px button width for proper centering */
+}
+
+.smallButton { 
+  width: 70px; 
+  height: 70px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+}
+
+.scanButton { 
+  width: 110px; 
+  height: 110px; 
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3); 
+}
+
+/* Scan button needs different centering */
+.scanButton.centerAlign {
+  left: -55px;  /* Half of 110px button width for proper centering */
+}
+
+.dimmer {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px);
+  z-index: 5;
+}

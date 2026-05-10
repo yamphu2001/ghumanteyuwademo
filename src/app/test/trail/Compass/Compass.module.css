@@ -1,0 +1,59 @@
+.compassWrapper {
+  position: absolute;
+  /* Anchor to a corner so it stays away from the player mascot */
+  top: 20px;
+  right: 20px; 
+  
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  
+  /* This prevents the wrapper from taking up more space than needed */
+  width: fit-content;
+  pointer-events: auto;
+}
+
+.compassBtn {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 50%;
+  width: 65px;
+  height: 65px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.compassBtn:hover {
+  background: white;
+  transform: scale(1.05);
+}
+
+.compassBtn:active {
+  transform: scale(0.95);
+}
+
+.needle {
+  width: 75%;
+  height: 75%;
+  object-fit: contain;
+  /* ease-out makes the needle feel 'heavy' and mechanical */
+  transition: transform 0.2s ease-out; 
+}
+
+.debugBtn {
+  font-size: 10px;
+  font-weight: bold;
+  background: #000;
+  color: #fff;
+  border-radius: 4px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

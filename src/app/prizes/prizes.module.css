@@ -1,0 +1,149 @@
+.container {
+  background-color: #FFFFFF;
+  min-height: 100vh;
+  font-family: -apple-system, system-ui, sans-serif;
+  color: #000000;
+  padding-bottom: 120px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: white;
+  border-bottom: 1px solid #EAEAEA;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.backButton {
+  border: none;
+  background: #F8F8F8;
+  cursor: pointer;
+  padding: 8px;
+  borderRadius: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Tabs */
+.tabContainer {
+  display: flex;
+  gap: 5px;
+  background-color: #F8F8F8;
+  padding: 6px;
+  border-radius: 20px;
+  border: 1px solid #EAEAEA;
+}
+
+.tabButton {
+  flex: 1;
+  padding: 12px 5px;
+  border: none;
+  cursor: pointer;
+  border-radius: 15px;
+  transition: 0.3s;
+  font-weight: 700;
+  font-size: 12px;
+  background-color: transparent;
+  color: #757575;
+}
+
+.tabButtonActive {
+  background-color: #000000;
+  color: white;
+}
+
+/* Ergonomics Card */
+.ergoCard {
+  padding: 20px;
+  background-color: #F8F8F8;
+  border-radius: 28px;
+  border: 1px solid #EAEAEA;
+  margin-bottom: 10px;
+}
+
+.ergoGrid {
+  display: flex;
+  gap: 8px;
+}
+
+.ergoButton {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 900;
+  transition: 0.2s;
+  background-color: white;
+  color: #000000;
+}
+
+.ergoButtonActive {
+  background-color: #E63946;
+  color: white;
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+}
+
+/* Floating Action Button */
+.fabContainer {
+  position: fixed;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 20;
+}
+
+.fab {
+  width: 90%;
+  max-width: 400px;
+  background-color: #000000;
+  color: white;
+  border: none;
+  padding: 18px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 15px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+/* Custom Toast Notification */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+  animation: fadeInOut 2s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -10px); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -10px); }
+}

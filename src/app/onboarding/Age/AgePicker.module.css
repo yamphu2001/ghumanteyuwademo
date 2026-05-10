@@ -1,0 +1,156 @@
+/* src/app/onboarding/Age/AgePicker.module.css */
+
+.container {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  /* Reduced gap between card and confirm button */
+  gap: clamp(8px, 1.5vh, 16px);
+}
+
+.outerBox {
+  border: 4px solid black; /* Thinned border for sleeker look */
+  border-radius: 32px;
+  background: white;
+  box-shadow: 8px 8px 0px 0px rgba(0,0,0,1); /* Slightly smaller shadow */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.headerSection {
+  background: #0a0a0a;
+  /* Tighter vertical padding */
+  padding: clamp(12px, 2.5vh, 24px) 20px;
+  position: relative;
+}
+
+.modeBadge {
+  background: white;
+  color: black;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  background: #333;
+  border-radius: 50%;
+}
+
+.dotActive {
+  background: #ff3b30;
+  box-shadow: 0 0 6px #ff3b30;
+}
+
+.label {
+  color: #666;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.dateDisplay {
+  /* Scales based on height to prevent overflow */
+  font-size: clamp(1.1rem, 4vh, 2rem);
+  font-weight: 900;
+  color: white;
+  font-style: italic;
+  letter-spacing: -0.05em;
+}
+
+.ageDisplay {
+  text-align: right;
+}
+
+.dim { color: #333; }
+
+.selectionArea {
+  /* Reduced padding to reclaim space */
+  padding: clamp(12px, 2vh, 24px) 20px;
+  flex: 1;
+}
+
+.scrollContainer {
+  /* Forces the grid to stay within a tight height */
+  max-height: clamp(160px, 28vh, 280px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Custom Scrollbar */
+.scrollContainer::-webkit-scrollbar { width: 3px; }
+.scrollContainer::-webkit-scrollbar-thumb { background: #000; border-radius: 10px; }
+
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.grid7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+
+.dayHeader {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 900;
+  color: #ddd;
+  padding-bottom: 4px;
+}
+
+.optionBtn {
+  /* Smaller, tighter buttons */
+  padding: clamp(6px, 1.2vh, 12px);
+  background: #f4f4f5;
+  border-radius: 10px;
+  font-weight: 800;
+  border: 2px solid transparent;
+  font-size: clamp(0.7rem, 1.5vh, 0.9rem);
+  cursor: pointer;
+}
+
+.dayBtn {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.65rem, 1.4vh, 0.85rem);
+  font-weight: 800;
+  background: #f4f4f5;
+  border-radius: 8px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-size: 9px;
+  font-weight: 800;
+  color: #000;
+}
+
+.selected {
+  background-color: #E21D12 !important;
+  color: white !important;
+  border: 2px solid #000 !important;
+  box-shadow: 3px 3px 0px 0px #000;
+  transform: translate(-1px, -1px);
+}
+
+.confirmBtn {
+  width: 100%;
+  background: black;
+  color: white;
+  /* Slimmer button height */
+  padding: clamp(12px, 1.8vh, 18px);
+  border-radius: 16px;
+  border: 4px solid black;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 1rem;
+  box-shadow: 6px 6px 0px 0px rgba(0,0,0,0.1);
+}

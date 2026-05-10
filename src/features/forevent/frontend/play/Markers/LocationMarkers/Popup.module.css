@@ -1,0 +1,313 @@
+/* ── Overlay ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10070;
+  padding: 16px;
+  pointer-events: auto; /* ENSURE THIS IS AUTO */
+}
+
+.closeBtn, .skipBtn {
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 10080; /* Ensure buttons are above everything */
+}
+
+/* ── Card ── */
+.popupContent {
+  background: #ffffff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  overflow: hidden;
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.18);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+/* ── Close button ── */
+.closeBtn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #ffffff;
+  border: 1px solid #dc2626;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.closeBtn:hover {
+  background: rgba(220, 38, 38, 0.08);
+  transform: scale(1.02);
+}
+
+/* ════════════════════════════════
+   LOCKED STATE
+   ════════════════════════════════ */
+.lockedView {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 28px 36px;
+  text-align: center;
+}
+
+.lockIconWrap {
+  width: 72px;
+  height: 72px;
+  background: #ffffff;
+  border: 2px solid #dc2626;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.lockIcon {
+  width: 34px;
+  height: 34px;
+  color: #dc2626;
+}
+
+.lockedTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 10px;
+}
+
+.lockedMsg {
+  font-size: 14px;
+  color: #000000;
+  line-height: 1.6;
+  margin: 0 0 20px;
+  max-width: 260px;
+}
+
+.lockedBadge {
+  background: #ffffff;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid #dc2626;
+}
+
+/* ════════════════════════════════
+   UNLOCKED STATE
+   ════════════════════════════════ */
+.unlockedView {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hero image area */
+.heroWrap {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: #ffffff;
+  overflow: hidden;
+  border-bottom: 4px solid #dc2626;
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.heroFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.heroFallbackIcon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid #dc2626;
+  object-fit: cover;
+}
+
+/* "Unlocked" badge over hero */
+.heroBadge {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.4px;
+}
+
+.heroBadgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+/* Text body */
+.unlockedBody {
+  padding: 22px 24px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.unlockedTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: #000000;
+  margin: 0 0 10px;
+  letter-spacing: -0.3px;
+}
+
+.unlockedDesc {
+  font-size: 14px;
+  color: #000000;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Points Badge ── */
+.pointsBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 18px;
+  background: #dc2626;
+  color: #ffffff;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.pointsStar {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.pointsValue {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.pointsLabel {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Action row ── */
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 8px 24px 24px;
+}
+
+.skipTimerGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skipBtn {
+  padding: 12px 20px;
+  background: #ffffff;
+  color: #dc2626;
+  border: 1.5px solid #dc2626;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.skipBtn:hover  { background: rgba(220, 38, 38, 0.08); }
+.skipBtn:active { transform: scale(0.97); }
+
+/* ── Countdown ring ── */
+.countdownWrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.countdownRing {
+  width: 40px;
+  height: 40px;
+  transform: rotate(-90deg);
+}
+
+.countdownTrack {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.18);
+  stroke-width: 2.5;
+}
+
+.countdownFill {
+  fill: none;
+  stroke: #dc2626;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.9s linear;
+}
+
+.countdownNum {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #000000;
+}
+
+

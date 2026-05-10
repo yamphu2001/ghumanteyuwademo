@@ -1,0 +1,91 @@
+/* MuseumMarkers.module.css */
+
+.overlayLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+
+.markerContainer {
+  position: absolute;
+  pointer-events: all;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  translate: -50% -100%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.markerPin {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  background-color: #6b7280;
+  background-size: cover;
+  background-position: center;
+  transition: border-color 0.25s, box-shadow 0.25s;
+
+  animation: colorChange 5s infinite step-end;
+}
+
+@keyframes colorChange {
+  0%   { border-color: #ffffff; } /* Red */
+  100% { border-color: #fffeff; }
+}
+
+.pinNearby {
+  animation: none !important;
+  border-color: #facc15 !important;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.4), 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* .pinUnlocked {
+  animation: none !important;
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.4), 0 2px 8px rgba(0, 0, 0, 0.35);
+} */
+
+@keyframes pulseYellow {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.4), 0 2px 8px rgba(0, 0, 0, 0.35); }
+  50%       { box-shadow: 0 0 0 8px rgba(250, 204, 21, 0.1), 0 2px 8px rgba(0, 0, 0, 0.35); }
+}
+
+.label       { display: none; }
+.hint        { display: none; }
+.hintUnlocked { display: none; }
+
+/* --- Unlocked State (Task complete) --- */
+.pinUnlocked {
+  /* 1. Stop the rainbow/color animation */
+  animation: none !important;
+  
+  /* 2. Set the solid green border */
+  border-color: #22c55e !important;
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.9);
+  
+  /* 3. Make the background image gray and fade it */
+  /* grayscale(100%) turns it black and white */
+  /* opacity(0.6) makes it 60% visible */
+  filter: grayscale(100%) opacity(0.6);
+  
+  /* 4. Optional: change the background color of the circle itself */
+  background-color: #e5e7eb !important; 
+  
+  /* Smooth the transition when it unlocks */
+  transition: filter 0.5s ease, border-color 0.5s ease;
+}
+
+/* Ensure the hover effect doesn't make it look "active" again */
+.pinUnlocked:hover {
+  transform: scale(1); /* Disable zoom on completed markers */
+  filter: grayscale(100%) opacity(0.8); /* Slight highlight on hover */
+}

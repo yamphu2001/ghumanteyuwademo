@@ -1,0 +1,165 @@
+.camRoot {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 16px;
+  background: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.title { font-weight: 900; font-size: 1.1rem; color: #1a1a1a; }
+
+.headerTools { display: flex; gap: 10px; align-items: center; }
+
+.iconBtn {
+  background: #f0f0f0; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 16px;
+}
+
+/* Ratio Icons */
+.ratioSelector { display: flex; gap: 6px; }
+.ratioSelector button {
+  width: 34px; height: 34px;
+  background: #f4f4f4; border: none; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.ratioSelector .ratioActive { background: #d64545; }
+.ratioSelector .ratioActive div { border-color: #fff; }
+
+.iconPortrait { width: 11px; height: 16px; border: 2px solid #333; border-radius: 2px; }
+.iconLandscape { width: 16px; height: 11px; border: 2px solid #333; border-radius: 2px; }
+.iconSquare { width: 13px; height: 13px; border: 2px solid #333; border-radius: 2px; }
+
+/* Viewfinder */
+.viewfinderWrap {
+  position: relative;
+  width: 100%;
+  background: #111;
+  border-radius: 20px;
+  overflow: hidden;
+  touch-action: none;
+  transition: aspect-ratio 0.3s ease;
+}
+
+/* 2. FIX: Parent gets pointer events, allowing handleMove to capture coords */
+.viewfinderWrap * { pointer-events: none; }
+/* 2. FIX: Sticker specifically enabled for start of dragging */
+.stickerOverlay { pointer-events: auto !important; }
+
+.portrait { aspect-ratio: 9/16; }
+.landscape { aspect-ratio: 16/9; }
+.square { aspect-ratio: 1/1; }
+
+.video { width: 100%; height: 100%; object-fit: cover; }
+
+.stickerOverlay {
+  position: absolute;
+  z-index: 10;
+  cursor: grab;
+}
+
+/* Controls */
+.shutterBtn {
+  background: #d64545; color: #fff; border: none;
+  padding: 18px; border-radius: 12px; font-weight: 900;
+  width: 100%; font-size: 16px; margin-top: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(214, 69, 69, 0.3);
+}
+
+.stickerRow {
+  display: flex; gap: 10px; overflow-x: auto;
+  padding: 10px 0; margin-bottom: 10px;
+}
+
+.thumb {
+  flex-shrink: 0; width: 60px; height: 60px;
+  border: 2px solid #eee; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.thumbActive { border-color: #d64545; background: #fff5f5; }
+
+.toolRow { display: flex; gap: 20px; margin-bottom: 10px; }
+.tool { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.tool label { font-size: 11px; font-weight: 900; text-transform: uppercase; color: #888; }
+.tool input { accent-color: #d64545; }
+
+/* Result Screen */
+.resultActions {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 20px;
+}
+
+.saveBtn {
+  background: #d64545; color: #fff; text-align: center;
+  padding: 18px; border-radius: 12px; font-weight: 800;
+  text-decoration: none; font-size: 16px;
+}
+
+.retakeBtn {
+  background: #000; color: #fff; border: none;
+  padding: 18px; border-radius: 12px; font-weight: 800;
+  font-size: 16px; cursor: pointer;
+}
+
+.resultPreview { width: 100%; border-radius: 20px; object-fit: contain; }
+
+/* Overlays */
+.flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.flashActive { animation: flashAnim 0.3s; }
+@keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+.countdownOverlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 20; pointer-events: none;
+}
+
+.countdownValue {
+  font-family: serif; font-size: 120px; color: #fff; font-weight: 900;
+  animation: numPop 0.8s ease-out;
+}
+@keyframes numPop { 0% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
+
+.mirrored {
+  transform: scaleX(-1);
+}
+
+.iconFlip {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #333;
+  border-radius: 50%;
+  border-top-color: transparent;
+  position: relative;
+}
+
+.iconFlip::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  border: 4px solid transparent;
+  border-bottom-color: #333;
+  transform: rotate(45deg);
+}
+
+.viewfinderWrap {
+  /* Fix for dragging: Ensure mascot can be grabbed over the video */
+  touch-action: none;
+  cursor: grab;
+}
+
+.stickerOverlay {
+  pointer-events: none; /* Allows the container to handle the dragging math */
+}

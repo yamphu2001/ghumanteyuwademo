@@ -1,0 +1,142 @@
+.fullscreenOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10050;
+  cursor: pointer;
+}
+
+.fullscreenContent {
+  background: #ffffff;
+  width: 90%;
+  max-width: 450px;
+  border-radius: 20px;
+  padding: 32px;
+  cursor: default;
+  position: relative;
+  pointer-events: auto;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 26px 72px rgba(0,0,0,0.2);
+}
+
+/* ── Shared card wrapper ── */
+.popupCard {
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+/* ── Footer ── */
+.footerActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.backBtn,
+.exploreBtn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer !important;
+  transition: opacity 0.2s;
+  border: 1px solid #dc2626;
+}
+
+.backBtn {
+  background: #ffffff;
+  color: #000000;
+}
+
+.exploreBtn {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.backBtn:hover,
+.exploreBtn:hover {
+  opacity: 0.9;
+}
+
+/* ── Normal popup header ── */
+.warningStripe {
+  height: 6px;
+  background: #dc2626;
+  border-radius: 12px 12px 0 0;
+  margin-bottom: 0;
+}
+
+.popupHeader {
+  margin-bottom: 12px;
+}
+
+.popupTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #000000;
+  margin: 16px 0 0;
+  letter-spacing: -0.4px;
+}
+
+.contentBody {
+  margin-top: 8px;
+}
+
+.warningText {
+  font-size: 14px;
+  color: #000000;
+  line-height: 1.6;
+}
+
+/* ── Success / completed state ── */
+.successStripe {
+  height: 6px;
+  background: #dc2626;
+  border-radius: 12px 12px 0 0;
+}
+
+.successBadge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 16px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+.successTitle {
+  font-size: 18px;
+  font-weight: 900;
+  color: #000000;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+
+.gamePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1.5px solid #dc2626;
+  border-radius: 999px;
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.nudgeBox {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+}

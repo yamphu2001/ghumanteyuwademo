@@ -1,0 +1,30 @@
+/* Prize.module.css */
+.prizeMarker {
+  z-index: 9999; /* Ensure it's on top of all other layers */
+  pointer-events: auto;
+  cursor: pointer;
+}
+/* This is the wrapper that MapLibre moves around */
+.markerContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 80px;
+  cursor: pointer;
+  z-index: 999;
+  /* Ensures the marker is interactive */
+  pointer-events: auto !important; 
+}
+
+/* This handles the visual animation */
+.markerBounce {
+  filter: drop-shadow(0 0 8px gold);
+  animation: bounce 2s infinite ease-in-out;
+  display: block;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); } 
+}

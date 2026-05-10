@@ -1,0 +1,80 @@
+/* The Root Container: Locks the game to the screen */
+.gameWrapper {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  overflow: hidden;
+  touch-action: none; /* Prevents accidental browser zooming/scrolling */
+}
+
+/* The Map Layer */
+.mapCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* The HUD Overlay: The invisible frame holding your UI */
+.hudOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  
+  /* CRITICAL: Allows user to touch/drag the map through the gaps in the UI */
+  pointer-events: none; 
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom) 20px;
+}
+
+/* Re-enable touch for actual HUD elements like XP bars or Compass */
+.hudOverlay > * {
+  pointer-events: auto;
+}
+.loadingScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff; /* Stark White */
+  z-index: 10000;
+}
+
+/* The Spinner */
+.loadingScreen::before {
+  content: "";
+  width: 40px;
+  height: 40px;
+  border: 4px solid #000000; /* Solid Black */
+  border-top: 4px solid #ff0000; /* Sharp Red */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loadingScreen p {
+  margin-top: 24px;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #000000; /* Black text */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

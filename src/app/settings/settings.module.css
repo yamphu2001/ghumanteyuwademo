@@ -1,0 +1,395 @@
+.container {
+  background-color: #FFFFFF;
+  height: 100vh; /* Changed from min/max height */
+  font-family: -apple-system, system-ui, sans-serif;
+  color: #000000;
+  /* padding-bottom: 120px;  <- Remove this, handled by main or FAB */
+  overflow: hidden; /* Prevent the double scrollbar */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.nav {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: white;
+  border-bottom: 1px solid #EAEAEA;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.navTitle {
+  flex: 1;
+  text-align: center;
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.navSpacer {
+  width: 36px;
+}
+
+.backButton {
+  border: none;
+  background: #F8F8F8;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 15px 140px 15px; /* Added bottom padding here for FAB clearance */
+  flex: 1; /* Occupy remaining space */
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Section Header */
+.sectionHeader {
+  font-size: 11px;
+  font-weight: 900;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 35px 0 12px 15px;
+}
+
+/* Setting Row */
+.settingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background-color: #FFF;
+  margin-bottom: 8px;
+  cursor: pointer;
+  border-radius: 24px;
+  border: 1px solid #EAEAEA;
+}
+
+.settingRowDanger {
+  background-color: #FFF0F0;
+  border-color: #E63946;
+}
+
+.settingIconWrapper {
+  background-color: #F8F8F8;
+  padding: 10px;
+  border-radius: 14px;
+  color: #000000;
+}
+
+.settingIconWrapperDanger {
+  background-color: #FFF0F0;
+  color: #E63946;
+}
+
+.settingContent {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.settingTitle {
+  font-weight: 700;
+  font-size: 15px;
+  color: #000000;
+}
+
+.settingTitleDanger {
+  color: #E63946;
+}
+
+.settingSubtitle {
+  font-size: 11px;
+  color: #757575;
+}
+
+.settingRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settingBadge {
+  font-size: 11px;
+  font-weight: 800;
+  color: white;
+  background-color: #E63946;
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+
+/* 3D Toggle */
+.toggleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background-color: #FFF;
+  margin-bottom: 12px;
+  cursor: pointer;
+  border-radius: 24px;
+  border: 1px solid #EAEAEA;
+}
+
+.toggleContainerActive {
+  background-color: #FFF0F0;
+  border-color: #E63946;
+}
+
+.toggleContent {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.toggleTitle {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.toggleSwitch {
+  width: 40px;
+  height: 20px;
+  background-color: #DDD;
+  border-radius: 20px;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.toggleSwitchActive {
+  background-color: #E63946;
+}
+
+.toggleKnob {
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: left 0.2s;
+}
+
+.toggleKnobActive {
+  left: 22px;
+}
+
+/* Theme Grid */
+.themeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.themeButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  border: 1px solid #EAEAEA;
+  border-radius: 18px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.themeButtonActive {
+  border-color: #E63946;
+  background-color: #FFF0F0;
+}
+
+.themeButtonLabel {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* Legal Card */
+.legalCard {
+  padding: 20px;
+  background-color: #F8F8F8;
+  border-radius: 28px;
+  border: 1px solid #EAEAEA;
+  margin-bottom: 10px;
+}
+
+.legalHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.legalTitle {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.legalText {
+  font-size: 12px;
+  color: #757575;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.legalFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #EAEAEA;
+}
+
+.legalCopyright {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.legalLink {
+  font-size: 11px;
+  color: #E63946;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.logoutContainer {
+  margin-top: 15px;
+}
+
+/* Tabs */
+.tabContainer {
+  display: flex;
+  gap: 5px;
+  background-color: #F8F8F8;
+  padding: 6px;
+  border-radius: 20px;
+  border: 1px solid #EAEAEA;
+}
+
+.tabButton {
+  flex: 1;
+  padding: 12px 5px;
+  border: none;
+  cursor: pointer;
+  border-radius: 15px;
+  transition: 0.3s;
+  font-weight: 700;
+  font-size: 12px;
+  background-color: transparent;
+  color: #757575;
+}
+
+.tabButtonActive {
+  background-color: #000000;
+  color: white;
+}
+
+/* Ergonomics Card */
+.ergoCard {
+  padding: 20px;
+  background-color: #F8F8F8;
+  border-radius: 28px;
+  border: 1px solid #EAEAEA;
+  margin-bottom: 10px;
+}
+
+.ergoHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.ergoHeaderTitle {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ergoGrid {
+  display: flex;
+  gap: 8px;
+}
+
+.ergoButton {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 900;
+  transition: 0.2s;
+  background-color: white;
+  color: #000000;
+}
+
+.ergoButtonActive {
+  background-color: #E63946;
+  color: white;
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+}
+
+/* Floating Action Button */
+.fabContainer {
+  position: fixed;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 20;
+}
+
+.fab {
+  width: 90%;
+  max-width: 400px;
+  background-color: #000000;
+  color: white;
+  border: none;
+  padding: 18px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 15px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+/* Custom Toast Notification */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+  animation: fadeInOut 2s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -10px); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -10px); }
+}

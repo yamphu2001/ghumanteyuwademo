@@ -1,0 +1,96 @@
+/* src/app/onboarding/guardian/awaiting.module.css */
+
+.awaitingCardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem;
+  animation: fadeIn 0.4s ease-out;
+  background-color: #000000; /* Main background to Black */
+  border-radius: inherit; /* Keeps the card shape */
+}
+
+.statusTag {
+  color: #ff9d00;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin-bottom: 0.5rem;
+}
+
+.heading {
+  font-size: 1.6rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.betaAlert {
+  background: rgba(255, 204, 0, 0.05); /* Subtle amber on black */
+  border: 1px solid rgba(255, 204, 0, 0.3);
+  color: #ffcc00;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.infoText {
+  color: #eeeeee; /* Brighter than grey for readability on black */
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.radarBox {
+  width: 100%;
+  background: #0a0a0a; /* Slightly lighter black for depth */
+  border: 1px solid #1a1a1a; /* Very dark border */
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.scanner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #111111; /* Black border track */
+  border-top-color: #ff9d00;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+.searchingText {
+  font-size: 0.8rem;
+  color: #555555; /* Dimmer text for the "searching" feel */
+  font-family: monospace;
+}
+
+.backBtn {
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #333333; /* Dark border */
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.backBtn:hover {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

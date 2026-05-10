@@ -1,0 +1,32 @@
+/* ModeSwitcher.module.css */
+.container {
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  padding: 5px;
+  border-radius: 50px;
+  width: fit-content;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.modeButton {
+  padding: 10px 18px;
+  border: none;
+  background: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #555;
+}
+
+.active {
+  background-color: #E63946; /* Ghumante Yuwa Red */
+  color: white;
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+  transform: translateY(-1px);
+}
