@@ -8,6 +8,7 @@ import { rtdb } from "@/lib/firebase";
 import { ref, onValue } from "firebase/database";
 import { motion } from "framer-motion";
 import { Trophy } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import Compass from '@/features/forevent/frontend/play/Compass/Compass';
 import PlayerMarker from '@/features/forevent/frontend/play/PlayerMarker/PlayerMarker';
@@ -25,12 +26,30 @@ interface MapContainerProps {
   eventId: string;
 }
 
+function sumPoints(categoryData: Record<string, any> | null | undefined): number {
+  if (!categoryData || typeof categoryData !== "object") return 0;
+  return Object.values(categoryData).reduce(
+    (acc, marker: any) => acc + (Number(marker?.pointsEarned) || 0),
+    0,
+  );
+}
+
+function timeToSeconds(timeStr: string | null | undefined): number {
+  if (!timeStr) return 999999;
+  const minutes = timeStr.match(/(\d+)m/);
+  const seconds = timeStr.match(/(\d+)s/);
+  const m = minutes ? parseInt(minutes[1], 10) : 0;
+  const s = seconds ? parseInt(seconds[1], 10) : 0;
+  return m * 60 + s;
+}
+
 export default function MapContainer({ eventId }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const { map, isLoaded } = useMapInit(mapContainer, eventId);
   const [showRoulette, setShowRoulette] = useState(false);
-  const [playerRank, setPlayerRank] = useState<number | string | null>(null);
-  const [uid, setUid] = useState<string | null>(null); // 1. Added state for uid
+  const [playerRank, setPlayerRank] = useState<number | null>(null);
+  const [uid, setUid] = useState<string | null>(null);
+  const router = useRouter();
 
   // 2. Fetch the UID when the component mounts
   useEffect(() => {
@@ -43,20 +62,51 @@ export default function MapContainer({ eventId }: MapContainerProps) {
     return () => unsubscribeAuth();
   }, []);
 
-  // 3. Now the rank listener will work because uid is available
+  // 3. Compute the live rank for the current user from eventsProgress data
   useEffect(() => {
     if (!eventId || !uid) return;
 
-    const rankRef = ref(rtdb, `eventsProgress/${eventId}/${uid}/userInfo/rank`);
-    
-    const unsubscribeRank = onValue(rankRef, (snapshot) => {
-      const rankValue = snapshot.val();
-      if (rankValue !== null) {
-        setPlayerRank(rankValue);
+    const eventRef = ref(rtdb, `eventsProgress/${eventId}`);
+    const unsubscribe = onValue(eventRef, (snapshot) => {
+      const allData = snapshot.val() || {};
+      const entries = Object.entries(allData).map(([userId, data]: [string, any]) => {
+        const locationPoints = sumPoints(data?.locationMarkers);
+        const qrPoints = sumPoints(data?.qrcodemarkers);
+        const specialPoints = sumPoints(data?.specialMarkers);
+        const quizPoints = Number(data?.quizResult?.totalScore) || 0;
+        const finishTime = data?.scannedTimes?.timeTaken || null;
+        return {
+          uid: userId,
+          totalPoints: locationPoints + qrPoints + specialPoints + quizPoints,
+          timeSeconds: timeToSeconds(finishTime),
+        };
+      });
+
+      entries.sort((a, b) => {
+        if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+        return a.timeSeconds - b.timeSeconds;
+      });
+
+      let currentRank = 1;
+      let myRank: number | null = null;
+      entries.forEach((entry, index) => {
+        if (
+          index > 0 &&
+          (entry.totalPoints < entries[index - 1].totalPoints || entry.timeSeconds > entries[index - 1].timeSeconds)
+        ) {
+          currentRank = index + 1;
+        }
+        if (entry.uid === uid) {
+          myRank = currentRank;
+        }
+      });
+
+      if (myRank !== null) {
+        setPlayerRank(myRank);
       }
     });
 
-    return () => unsubscribeRank();
+    return () => unsubscribe();
   }, [eventId, uid]);
 
   return (
@@ -83,12 +133,21 @@ export default function MapContainer({ eventId }: MapContainerProps) {
       {/* HUD elements — above both layers */}
       {isLoaded && <ProgressBar />}
 
-      {playerRank && (
+      {playerRank !== null && (
         <div className={styles.rankWidget}>
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className={styles.rankPanel}
+            onClick={() => router.push(`/eventsmaker/${eventId}/leaderboard`)}
+            style={{ cursor: 'pointer' }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                router.push(`/eventsmaker/${eventId}/leaderboard`);
+              }
+            }}
           >
             <div className={styles.rankIcon}>
               <Trophy size={18} />

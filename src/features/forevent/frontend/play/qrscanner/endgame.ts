@@ -134,9 +134,9 @@ export async function handleRouletteScan(
       timeTaken: timeDiffDisplay // Saves the "1h 5m 10s" result
     });
 
-    await update(ref(rtdb, `eventsProgress/${eventId}/${uid}/scannedTimes`), {
-      
-      finishedAt: finishedAtStr,
+    // Also store completionRate for future reference
+    await update(ref(rtdb, `eventsProgress/${eventId}/${uid}`), {
+      completionRate,
     });
 
   return {

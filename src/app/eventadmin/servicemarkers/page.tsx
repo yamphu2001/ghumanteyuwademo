@@ -5,7 +5,7 @@
 // import { db } from "@/lib/firebase";
 // import { doc, updateDoc, getDoc, onSnapshot } from "firebase/firestore";
 // import { useEventId } from "../Eventidcontext";
-// import MapPicker from "../MapPicker";
+// import MapPicker from "./ServiceMarkerPicker";
 
 // export default function AdminServiceMarker() {
 //   const { eventId } = useEventId();
@@ -21,6 +21,7 @@
 //     popupImage: "",
 //     height: 20 // Added initial height
 //   });
+  
 
 //   const [isMapFullScreen, setIsMapFullScreen] = useState(false);
 //   const [eventAreaBoundary, setEventAreaBoundary] = useState<number[][][] | undefined>(undefined);
@@ -249,7 +250,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc, getDoc, onSnapshot } from "firebase/firestore";
 import { useEventId } from "../Eventidcontext";
-import MapPicker from "../MapPicker";
+import MapPicker from "./ServiceMarkerPicker";
 
 export default function AdminServiceMarker() {
   const { eventId } = useEventId();

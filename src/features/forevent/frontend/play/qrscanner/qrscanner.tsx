@@ -173,12 +173,20 @@ const QRScanner = ({ onScanSuccess, eventId }: QRScannerProps) => {
 
   return (
     <div className={`${styles.container} ${isReady ? styles.active : styles.inactive}`}>
-      <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover opacity-60" />
+      <video ref={videoRef} autoPlay playsInline muted className={`${styles.cameraVideo} absolute inset-0`} />
       <canvas ref={canvasRef} className="hidden" />
 
       <div className={styles.uiOverlay}>
         <div className={styles.uiBox}>
-          <div className={styles.scanSquare} />
+          <div className={styles.scanSquare}>
+            <div className={styles.scanCorners}>
+              <div className={`${styles.corner} ${styles.topL}`} />
+              <div className={`${styles.corner} ${styles.topR}`} />
+              <div className={`${styles.corner} ${styles.botL}`} />
+              <div className={`${styles.corner} ${styles.botR}`} />
+            </div>
+            <div className={styles.laserLine} />
+          </div>
           <div className={`${styles.hand} ${styles.leftHand} ${isReady ? styles.handVisible : styles.handHidden}`}>
             <Image src="/images/QRScanner/Left.png" alt="Left hand" fill className={styles.handImageBottomRight} priority />
           </div>
@@ -204,9 +212,17 @@ const QRScanner = ({ onScanSuccess, eventId }: QRScannerProps) => {
                 <span>TIME:</span>
                 <span className="text-blue-600 uppercase">{endStats?.totalTime}</span>
               </div>
-              <div className="flex justify-between">
-                <span>PROGRESS:</span>
-                <span>{endStats?.completionRate}%</span>
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span>PROGRESS:</span>
+                  <span>{endStats?.completionRate}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-green-600 h-2.5 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(endStats?.completionRate || 0, 100)}%` }}
+                  ></div>
+                </div>
               </div>
             </div>
 
