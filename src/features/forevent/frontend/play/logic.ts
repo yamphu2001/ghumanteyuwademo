@@ -8,47 +8,37 @@
 // import { db } from "@/lib/firebase";
 // import { useMapPreferenceStore } from '@/store/Map_preference';
 
-// // Default fallback if a specific event has no boundary set yet
 // const DEFAULT_BOUNDARY: [number, number][] = [[85.26, 27.77], [85.43, 27.76], [85.42, 27.64], [85.23, 27.65], [85.26, 27.77]];
 
-// // Update 1: Accept eventId as the second argument
 // export const useMapInit = (mapContainer: React.RefObject<HTMLDivElement | null>, eventId: string) => {
 //   const mapRef = useRef<maplibregl.Map | null>(null);
+//   const isInitializing = useRef(false); // Lock to prevent double-init
 //   const [isLoaded, setIsLoaded] = useState(false);
-//   const { theme, zoom, pitch, is3D } = useMapPreferenceStore();
+//   const { zoom, pitch, is3D } = useMapPreferenceStore();
 
 //   useEffect(() => {
-//     if (!mapContainer.current) return;
+//     // Exit if no container, already initializing, or map already exists
+//     if (!mapContainer.current || isInitializing.current || mapRef.current) return;
+
+//     isInitializing.current = true;
 
 //     const initMap = async () => {
 //       let activeBoundary: [number, number][] = DEFAULT_BOUNDARY;
-//       let center: [number, number] = [85.3076, 27.7042]; // Default KTM center
+//       let center: [number, number] = [85.3076, 27.7042];
 
 //       try {
-//         // Update 2: Fetch the SPECIFIC event document using the eventId
 //         const snap = await getDoc(doc(db, "events", eventId));
-        
 //         if (snap.exists()) {
 //           const data = snap.data();
-          
-//           // Use the center coordinates saved by Admin
-//           if (data.lng && data.lat) {
-//   center = [data.lng, data.lat];
-// }
-
-//           // Use the specific boundary saved by Admin for this event
+//           if (data.lng && data.lat) center = [data.lng, data.lat];
 //           if (data.boundaryCoords) {
-//             activeBoundary = data.boundaryCoords.map((obj: { lng: number; lat: number }) => [
-//               obj.lng,
-//               obj.lat
-//             ]);
+//             activeBoundary = data.boundaryCoords.map((obj: { lng: number; lat: number }) => [obj.lng, obj.lat]);
 //           }
 //         }
 //       } catch (e) {
-//         console.error("Error fetching dynamic event map config:", e);
+//         console.error("Firebase fetch error:", e);
 //       }
 
-//       // 2. CALCULATE DYNAMIC BOUNDS BASED ON THIS EVENT
 //       const lats = activeBoundary.map(c => c[1]);
 //       const lngs = activeBoundary.map(c => c[0]);
 //       const bounds: [[number, number], [number, number]] = [
@@ -56,21 +46,19 @@
 //         [Math.max(...lngs) + 0.005, Math.max(...lats) + 0.005]
 //       ];
 
+//       // Create map instance
 //       const mapInstance = new maplibregl.Map({
 //         container: mapContainer.current!,
 //         style: 'https://tiles.openfreemap.org/styles/liberty',
-//         center: center, // Now dynamically centered
+//         center: center,
 //         zoom: zoom,
 //         maxBounds: bounds,
-//         pitch: is3D ? pitch : 45,
-        
-        
-//       });
+//         pitch: is3D ? pitch : 60, // Default to a steep 60° for 3D visibility
+//         bearing: -15, // Slight rotation for depth perception
+//       } as any);
 
 //       mapInstance.on('load', () => {
-//         const holeCoords = activeBoundary;
-
-//         // 3. ADD MASK SOURCE
+//         // --- ADD MASK SOURCE ---
 //         mapInstance.addSource('boundary-mask', {
 //           type: 'geojson',
 //           data: {
@@ -78,10 +66,7 @@
 //             properties: {},
 //             geometry: {
 //               type: 'Polygon',
-//               coordinates: [
-//                 [[-180, 90], [-180, -90], [180, -90], [180, 90], [-180, 90]], 
-//                 holeCoords
-//               ],
+//               coordinates: [[[-180, 90], [-180, -90], [180, -90], [180, 90], [-180, 90]], activeBoundary],
 //             },
 //           },
 //         });
@@ -93,17 +78,10 @@
 //           paint: { 'fill-color': '#0B0E14', 'fill-opacity': 0.85 },
 //         });
 
-//         // 4. ADD OUTLINE
+//         // --- ADD OUTLINE ---
 //         mapInstance.addSource('boundary-line', {
 //           type: 'geojson',
-//           data: {
-//             type: 'Feature',
-//             properties: {},
-//             geometry: { 
-//               type: 'LineString', 
-//               coordinates: activeBoundary 
-//             },
-//           },
+//           data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: activeBoundary } },
 //         });
 
 //         mapInstance.addLayer({
@@ -115,19 +93,26 @@
 
 //         mapRef.current = mapInstance;
 //         setIsLoaded(true);
+//         isInitializing.current = false;
 //       });
 //     };
 
 //     initMap();
 
+//     // CLEANUP: Vital to prevent WebGL context leakage
 //     return () => {
-//       mapRef.current?.remove();
-//       mapRef.current = null;
+//       if (mapRef.current) {
+//         mapRef.current.remove();
+//         mapRef.current = null;
+//       }
+//       isInitializing.current = false;
 //     };
-//   }, [mapContainer, theme, eventId]); // Update 3: Re-run if eventId changes
+//   }, [eventId, zoom, pitch, is3D]); // Dependencies
 
 //   return { map: mapRef, isLoaded };
 // };
+
+
 
 
 "use client";
