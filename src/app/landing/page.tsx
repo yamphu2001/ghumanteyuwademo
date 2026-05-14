@@ -52,6 +52,7 @@ export default function LandingPage() {
           <div className={styles.buttonGroup}>
             <Link href="/login" className={styles.playButton}>START EXPLORING</Link>
             <Link href="/about" className={styles.learnMoreButton}>LEARN MORE</Link>
+            
           </div>
 
           <footer className={styles.footer}>

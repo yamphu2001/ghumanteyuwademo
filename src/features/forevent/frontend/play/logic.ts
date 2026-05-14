@@ -113,9 +113,7 @@
 // };
 
 
-
-
-"use client";
+'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
@@ -127,14 +125,13 @@ const DEFAULT_BOUNDARY: [number, number][] = [[85.26, 27.77], [85.43, 27.76], [8
 
 export const useMapInit = (mapContainer: React.RefObject<HTMLDivElement | null>, eventId: string) => {
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const isInitializing = useRef(false); // Lock to prevent double-init
+  const isInitializing = useRef(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const { zoom, pitch, is3D } = useMapPreferenceStore();
 
+  // INITIALIZATION: Only runs once (or if eventId changes)
   useEffect(() => {
-    // Exit if no container, already initializing, or map already exists
     if (!mapContainer.current || isInitializing.current || mapRef.current) return;
-
     isInitializing.current = true;
 
     const initMap = async () => {
@@ -147,7 +144,7 @@ export const useMapInit = (mapContainer: React.RefObject<HTMLDivElement | null>,
           const data = snap.data();
           if (data.lng && data.lat) center = [data.lng, data.lat];
           if (data.boundaryCoords) {
-            activeBoundary = data.boundaryCoords.map((obj: { lng: number; lat: number }) => [obj.lng, obj.lat]);
+            activeBoundary = data.boundaryCoords.map((obj: any) => [obj.lng, obj.lat]);
           }
         }
       } catch (e) {
@@ -161,19 +158,18 @@ export const useMapInit = (mapContainer: React.RefObject<HTMLDivElement | null>,
         [Math.max(...lngs) + 0.005, Math.max(...lats) + 0.005]
       ];
 
-      // Create map instance
       const mapInstance = new maplibregl.Map({
         container: mapContainer.current!,
         style: 'https://tiles.openfreemap.org/styles/liberty',
         center: center,
         zoom: zoom,
         maxBounds: bounds,
-        pitch: is3D ? pitch : 60, // Default to a steep 60° for 3D visibility
-        bearing: -15, // Slight rotation for depth perception
-      } as any);
+        pitch: is3D ? pitch : 60,
+        bearing: -15,
+      });
 
       mapInstance.on('load', () => {
-        // --- ADD MASK SOURCE ---
+        // Boundary Mask
         mapInstance.addSource('boundary-mask', {
           type: 'geojson',
           data: {
@@ -193,7 +189,7 @@ export const useMapInit = (mapContainer: React.RefObject<HTMLDivElement | null>,
           paint: { 'fill-color': '#0B0E14', 'fill-opacity': 0.85 },
         });
 
-        // --- ADD OUTLINE ---
+        // Boundary Outline
         mapInstance.addSource('boundary-line', {
           type: 'geojson',
           data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: activeBoundary } },
@@ -214,15 +210,22 @@ export const useMapInit = (mapContainer: React.RefObject<HTMLDivElement | null>,
 
     initMap();
 
-    // CLEANUP: Vital to prevent WebGL context leakage
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
       isInitializing.current = false;
+      setIsLoaded(false);
     };
-  }, [eventId, zoom, pitch, is3D]); // Dependencies
+  }, [eventId]);
+
+  // UPDATE: Updates map state without re-initializing
+  useEffect(() => {
+    if (mapRef.current) {
+      mapRef.current.setPitch(is3D ? pitch : 0);
+    }
+  }, [pitch, is3D]);
 
   return { map: mapRef, isLoaded };
 };

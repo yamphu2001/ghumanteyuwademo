@@ -194,6 +194,7 @@ import StallMarker from '../Markers/StallMarkers/stall';
 import PrizeSystem from '@/app/eventsmaker/[eventId]/prizes/PrizeSystem';
 import RoulettePage from '@/app/eventsmaker/[eventId]/roulette/page';
 import ServiceMarkers from '@/features/forevent/frontend/play/Markers/ServiceMarkers/ServiceMarker';
+import Marker3DPlotter from '@/features/forevent/frontend/play/Markers/3dMarkers/3dmarkers';
 
 interface MapContainerProps {
   eventId: string;
@@ -311,6 +312,7 @@ export default function MapContainer({ eventId }: MapContainerProps) {
           <MuseumMarkers map={map} eventId={eventId} />
           <PrizeSystem map={map} eventId={eventId} />
           <ServiceMarkers map={map} eventId={eventId} />
+          <Marker3DPlotter map={map} eventId={eventId} />
         </div>
       )}
 
