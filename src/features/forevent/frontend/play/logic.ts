@@ -1,95 +1,84 @@
 
-
-// "use client";
+// 'use client';
 
 // import { useEffect, useRef, useState } from 'react';
 // import maplibregl from 'maplibre-gl';
 // import { doc, getDoc } from "firebase/firestore";
 // import { db } from "@/lib/firebase";
-// import { useMapPreferenceStore } from '@/store/Map_preference';
-
-// const DEFAULT_BOUNDARY: [number, number][] = [[85.26, 27.77], [85.43, 27.76], [85.42, 27.64], [85.23, 27.65], [85.26, 27.77]];
 
 // export const useMapInit = (mapContainer: React.RefObject<HTMLDivElement | null>, eventId: string) => {
 //   const mapRef = useRef<maplibregl.Map | null>(null);
-//   const isInitializing = useRef(false); // Lock to prevent double-init
 //   const [isLoaded, setIsLoaded] = useState(false);
-//   const { zoom, pitch, is3D } = useMapPreferenceStore();
+//   const isInitializing = useRef(false);
 
 //   useEffect(() => {
-//     // Exit if no container, already initializing, or map already exists
 //     if (!mapContainer.current || isInitializing.current || mapRef.current) return;
-
 //     isInitializing.current = true;
 
 //     const initMap = async () => {
-//       let activeBoundary: [number, number][] = DEFAULT_BOUNDARY;
 //       let center: [number, number] = [85.3076, 27.7042];
+//       let boundary: [number, number][] = [];
 
 //       try {
 //         const snap = await getDoc(doc(db, "events", eventId));
 //         if (snap.exists()) {
 //           const data = snap.data();
 //           if (data.lng && data.lat) center = [data.lng, data.lat];
-//           if (data.boundaryCoords) {
-//             activeBoundary = data.boundaryCoords.map((obj: { lng: number; lat: number }) => [obj.lng, obj.lat]);
-//           }
+//           if (data.boundaryCoords) boundary = data.boundaryCoords.map((p: any) => [p.lng, p.lat]);
 //         }
 //       } catch (e) {
 //         console.error("Firebase fetch error:", e);
 //       }
 
-//       const lats = activeBoundary.map(c => c[1]);
-//       const lngs = activeBoundary.map(c => c[0]);
-//       const bounds: [[number, number], [number, number]] = [
-//         [Math.min(...lngs) - 0.005, Math.min(...lats) - 0.005],
-//         [Math.max(...lngs) + 0.005, Math.max(...lats) + 0.005]
-//       ];
-
-//       // Create map instance
 //       const mapInstance = new maplibregl.Map({
 //         container: mapContainer.current!,
-//         style: 'https://tiles.openfreemap.org/styles/liberty',
+//         style: 'https://tiles.openfreemap.org/styles/bright',
 //         center: center,
-//         zoom: zoom,
-//         maxBounds: bounds,
-//         pitch: is3D ? pitch : 60, // Default to a steep 60° for 3D visibility
-//         bearing: -15, // Slight rotation for depth perception
-//       } as any);
+//         zoom: 16,
+//         minZoom: 14, 
+//         maxZoom: 20,
+//         pitch: 60,
+      
+//       });
 
 //       mapInstance.on('load', () => {
-//         // --- ADD MASK SOURCE ---
-//         mapInstance.addSource('boundary-mask', {
-//           type: 'geojson',
-//           data: {
-//             type: 'Feature',
-//             properties: {},
-//             geometry: {
-//               type: 'Polygon',
-//               coordinates: [[[-180, 90], [-180, -90], [180, -90], [180, 90], [-180, 90]], activeBoundary],
-//             },
-//           },
-//         });
+//         const layers = mapInstance.getStyle().layers;
+//         const poiKeywords = ['poi', 'shop', 'food', 'hospital', 'medical', 'pharmacy', 'retail', 'commercial', 'amenity'];
 
-//         mapInstance.addLayer({
-//           id: 'boundary-mask-layer',
-//           type: 'fill',
-//           source: 'boundary-mask',
-//           paint: { 'fill-color': '#0B0E14', 'fill-opacity': 0.85 },
-//         });
+//         if (layers) {
+//           layers.forEach((layer) => {
+//             const l = layer as any;
+//             const sourceLayer = l['source-layer'] || '';
 
-//         // --- ADD OUTLINE ---
-//         mapInstance.addSource('boundary-line', {
-//           type: 'geojson',
-//           data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: activeBoundary } },
-//         });
+//             const isPoiLayer = poiKeywords.some(keyword => 
+//               layer.id.toLowerCase().includes(keyword) || 
+//               sourceLayer.toLowerCase().includes(keyword)
+//             );
 
-//         mapInstance.addLayer({
-//           id: 'boundary-outline',
-//           type: 'line',
-//           source: 'boundary-line',
-//           paint: { 'line-color': '#fe4f4f', 'line-width': 2 },
-//         });
+//             if (isPoiLayer) {
+//               mapInstance.setLayoutProperty(layer.id, 'visibility', 'none');
+//             }
+//           });
+//         }
+
+//         if (boundary.length > 0) {
+//             mapInstance.addSource('mask-src', {
+//                 type: 'geojson',
+//                 data: {
+//                     type: 'Feature',
+//                     geometry: {
+//                         type: 'Polygon',
+//                         coordinates: [[[-180, 90], [-180, -90], [180, -90], [180, 90], [-180, 90]], boundary]
+//                     }
+//                 } as any
+//             });
+//             mapInstance.addLayer({
+//                 id: 'boundary-mask-layer',
+//                 type: 'fill',
+//                 source: 'mask-src',
+//                 paint: { 'fill-color': '#0B0E14', 'fill-opacity': 0.8 }
+//             });
+//         }
 
 //         mapRef.current = mapInstance;
 //         setIsLoaded(true);
@@ -99,7 +88,6 @@
 
 //     initMap();
 
-//     // CLEANUP: Vital to prevent WebGL context leakage
 //     return () => {
 //       if (mapRef.current) {
 //         mapRef.current.remove();
@@ -107,10 +95,11 @@
 //       }
 //       isInitializing.current = false;
 //     };
-//   }, [eventId, zoom, pitch, is3D]); // Dependencies
+//   }, [eventId]); 
 
 //   return { map: mapRef, isLoaded };
 // };
+
 
 
 'use client';
@@ -133,23 +122,49 @@ export const useMapInit = (mapContainer: React.RefObject<HTMLDivElement | null>,
       let center: [number, number] = [85.3076, 27.7042];
       let boundary: [number, number][] = [];
 
-      const snap = await getDoc(doc(db, "events", eventId));
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.lng && data.lat) center = [data.lng, data.lat];
-        if (data.boundaryCoords) boundary = data.boundaryCoords.map((p: any) => [p.lng, p.lat]);
+      try {
+        const snap = await getDoc(doc(db, "events", eventId));
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.lng && data.lat) center = [data.lng, data.lat];
+          if (data.boundaryCoords) boundary = data.boundaryCoords.map((p: any) => [p.lng, p.lat]);
+        }
+      } catch (e) {
+        console.error("Firebase fetch error:", e);
       }
 
       const mapInstance = new maplibregl.Map({
         container: mapContainer.current!,
-        style: 'https://tiles.openfreemap.org/styles/liberty',
+        style: 'https://tiles.openfreemap.org/styles/bright',
         center: center,
         zoom: 16,
+        minZoom: 16, 
+        maxZoom: 20,
         pitch: 60,
+        // Disable scroll zooming (the "scrollable" behavior)
+        scrollZoom: true, 
       });
 
       mapInstance.on('load', () => {
-        // Add Mask Layer
+        const layers = mapInstance.getStyle().layers;
+        const poiKeywords = ['poi', 'shop', 'food', 'hospital', 'medical', 'pharmacy', 'retail', 'commercial', 'amenity'];
+
+        if (layers) {
+          layers.forEach((layer) => {
+            const l = layer as any;
+            const sourceLayer = l['source-layer'] || '';
+
+            const isPoiLayer = poiKeywords.some(keyword => 
+              layer.id.toLowerCase().includes(keyword) || 
+              sourceLayer.toLowerCase().includes(keyword)
+            );
+
+            if (isPoiLayer) {
+              mapInstance.setLayoutProperty(layer.id, 'visibility', 'none');
+            }
+          });
+        }
+
         if (boundary.length > 0) {
             mapInstance.addSource('mask-src', {
                 type: 'geojson',
@@ -176,12 +191,15 @@ export const useMapInit = (mapContainer: React.RefObject<HTMLDivElement | null>,
     };
 
     initMap();
+
     return () => {
-      mapRef.current?.remove();
-      mapRef.current = null;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
       isInitializing.current = false;
     };
-  }, [eventId]); // Only re-init if eventId changes!
+  }, [eventId]); 
 
   return { map: mapRef, isLoaded };
 };

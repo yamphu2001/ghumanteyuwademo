@@ -1,21 +1,27 @@
 
+
 // 'use client';
 
 // import { useEffect, useRef, useState } from 'react';
 // import maplibregl from 'maplibre-gl';
 // import { db } from '@/lib/firebase';
 // import { collection, onSnapshot } from 'firebase/firestore';
-// import FullScreenPopup from './popup'; // Import the new file
+// import FullScreenPopup from './popup'; 
 
 // export default function Marker3DPlotter({ map, eventId }: { map: maplibregl.Map, eventId: string }) {
 //   const [markers, setMarkers] = useState<any[]>([]);
-//   const [selectedStall, setSelectedStall] = useState<any>(null); // State for popup
-//   const cleanupRef = useRef<(() => void) | null>(null);
+//   const [selectedStall, setSelectedStall] = useState<any>(null); 
+//   const isMountedRef = useRef(true);
 
 //   useEffect(() => {
-//     return onSnapshot(collection(db, 'events', eventId, '3dmarker'), (snap) => {
+//     isMountedRef.current = true;
+//     const unsub = onSnapshot(collection(db, 'events', eventId, '3dmarker'), (snap) => {
 //       setMarkers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
 //     });
+//     return () => {
+//       unsub();
+//       isMountedRef.current = false;
+//     };
 //   }, [eventId]);
 
 //   useEffect(() => {
@@ -23,45 +29,62 @@
 
 //     const sourceId = 'stalls-3d-source';
 //     const layerId = 'stalls-3d-layer';
-//     const labelMarkers: maplibregl.Marker[] = [];
+//     const labelLayerId = 'stalls-3d-labels';
+
+//     const handleClick = (e: any) => {
+//       if (e.features && e.features.length > 0) {
+//         const props = e.features[0].properties;
+//         setSelectedStall({
+//           name: props.name,
+//           description: props.description,
+//           color: props.color
+//         });
+//       }
+//     };
+
+//     const handleMouseEnter = () => { map.getCanvas().style.cursor = 'pointer'; };
+//     const handleMouseLeave = () => { map.getCanvas().style.cursor = ''; };
 
 //     const draw = () => {
+//       if (!isMountedRef.current) return;
+
 //       const features = markers.flatMap(col => (col.calculatedPolygons || []).map((poly: any, index: number) => {
 //         const ring = poly.path.map((p: any) => [p.lng, p.lat]);
-//         if (ring.length > 0) ring.push(ring[0]);
+        
+//         if (ring.length < 3) return null; 
+//         ring.push(ring[0]); 
 
-//         // Find the specific item metadata for this polygon
 //         const item = col.items?.find((it: any) => it.id === poly.stallId) || col.items?.[index] || {};
-
-//         // Add Label Marker
-//         const center = ring[0]; 
-//         const el = document.createElement('div');
-//         el.innerHTML = `<div style="background:#111;color:white;padding:2px 6px;border-radius:4px;font-size:10px">${item.name || col.name}</div>`;
-//         const m = new maplibregl.Marker({ element: el }).setLngLat(center as [number, number]).addTo(map);
-//         labelMarkers.push(m);
+        
+//         // FIX: Ensure the color always has a '#' prefix and falls back correctly
+//         const rawColor = col.baseColor || col.color || '#cc9845';
+//         const finalColor = rawColor.startsWith('#') ? rawColor : `#${rawColor}`;
 
 //         return {
 //           type: 'Feature',
 //           geometry: { type: 'Polygon', coordinates: [ring] },
 //           properties: { 
 //             height: Number(col.height) || 5, 
-//             color: col.baseColor || '#cc9845',
-//             // Store data for the click event
+//             color: finalColor,
 //             name: item.name || col.name,
 //             description: item.description || col.description || "",
 //           }
 //         };
-//       }));
+//       })).filter(Boolean);
+
+//       const geojsonData: any = { type: 'FeatureCollection', features };
 
 //       if (map.getSource(sourceId)) {
-//         (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData({ type: 'FeatureCollection', features: features as any });
+//         (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(geojsonData);
 //       } else {
-//         map.addSource(sourceId, { type: 'geojson', data: { type: 'FeatureCollection', features: features as any } });
+//         map.addSource(sourceId, { type: 'geojson', data: geojsonData });
+
 //         map.addLayer({
 //           id: layerId,
 //           type: 'fill-extrusion',
 //           source: sourceId,
 //           paint: {
+//             // This 'get' binds the property we defined in the features above
 //             'fill-extrusion-color': ['get', 'color'],
 //             'fill-extrusion-height': ['get', 'height'],
 //             'fill-extrusion-base': 0,
@@ -69,32 +92,39 @@
 //           }
 //         });
 
-//         // --- NEW INTERACTION LOGIC ---
-//         map.on('click', layerId, (e) => {
-//           if (e.features && e.features.length > 0) {
-//             const props = e.features[0].properties;
-//             setSelectedStall({
-//               name: props.name,
-//               description: props.description,
-//               color: props.color
-//             });
+//         map.addLayer({
+//           id: labelLayerId,
+//           type: 'symbol',
+//           source: sourceId,
+//           layout: {
+//             'text-field': ['get', 'name'],
+//             'text-size': 12,
+//             'text-variable-anchor': ['center'],
+//             'text-justify': 'center',
+//             'text-allow-overlap': false,
+//             'text-padding': 2
+//           },
+//           paint: {
+//             'text-color': '#ffffff',
+//             'text-halo-color': '#111111',
+//             'text-halo-width': 1.5
 //           }
 //         });
 
-//         map.on('mouseenter', layerId, () => {
-//           map.getCanvas().style.cursor = 'pointer';
-//         });
-
-//         map.on('mouseleave', layerId, () => {
-//           map.getCanvas().style.cursor = '';
-//         });
+//         map.on('click', layerId, handleClick);
+//         map.on('mouseenter', layerId, handleMouseEnter);
+//         map.on('mouseleave', layerId, handleMouseLeave);
 //       }
 //     };
 
 //     if (map.isStyleLoaded()) draw(); else map.once('idle', draw);
 
 //     return () => {
-//       labelMarkers.forEach(m => m.remove());
+//       map.off('click', layerId, handleClick);
+//       map.off('mouseenter', layerId, handleMouseEnter);
+//       map.off('mouseleave', layerId, handleMouseLeave);
+
+//       if (map.getLayer(labelLayerId)) map.removeLayer(labelLayerId);
 //       if (map.getLayer(layerId)) map.removeLayer(layerId);
 //       if (map.getSource(sourceId)) map.removeSource(sourceId);
 //     };
@@ -110,8 +140,6 @@
 // }
 
 
-
-
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -123,8 +151,7 @@ import FullScreenPopup from './popup';
 export default function Marker3DPlotter({ map, eventId }: { map: maplibregl.Map, eventId: string }) {
   const [markers, setMarkers] = useState<any[]>([]);
   const [selectedStall, setSelectedStall] = useState<any>(null); 
-  const labelMarkersRef = useRef<maplibregl.Marker[]>([]); // Fix 1: Use Ref for cleanup
-  const isMountedRef = useRef(true); // Fix 2: Prevent async draws after unmount
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -142,8 +169,8 @@ export default function Marker3DPlotter({ map, eventId }: { map: maplibregl.Map,
 
     const sourceId = 'stalls-3d-source';
     const layerId = 'stalls-3d-layer';
+    const labelLayerId = 'stalls-3d-labels';
 
-    // Helper functions for event listeners to allow proper cleanup
     const handleClick = (e: any) => {
       if (e.features && e.features.length > 0) {
         const props = e.features[0].properties;
@@ -161,42 +188,41 @@ export default function Marker3DPlotter({ map, eventId }: { map: maplibregl.Map,
     const draw = () => {
       if (!isMountedRef.current) return;
 
-      // Clear existing markers before drawing new ones
-      labelMarkersRef.current.forEach(m => m.remove());
-      labelMarkersRef.current = [];
-
       const features = markers.flatMap(col => (col.calculatedPolygons || []).map((poly: any, index: number) => {
         const ring = poly.path.map((p: any) => [p.lng, p.lat]);
         
-        // Fix 3: Ensure valid Polygon (minimum 3 points + 1 closing point)
         if (ring.length < 3) return null; 
-        ring.push(ring[0]);
+        ring.push(ring[0]); 
 
+        // Match the specific stall from the 'items' array using stallId
         const item = col.items?.find((it: any) => it.id === poly.stallId) || col.items?.[index] || {};
-
-        const center = ring[0]; 
-        const el = document.createElement('div');
-        el.innerHTML = `<div style="background:#111;color:white;padding:2px 6px;border-radius:4px;font-size:10px;white-space:nowrap;pointer-events:none;">${item.name || col.name}</div>`;
         
-        const m = new maplibregl.Marker({ element: el }).setLngLat(center as [number, number]).addTo(map);
-        labelMarkersRef.current.push(m);
+        // LOGIC UPDATE: 
+        // 1. Try item.color (e.g., "#4bb007")
+        // 2. Try col.baseColor (e.g., "#ff0000")
+        // 3. Default to gold
+        const rawColor = item.color || col.baseColor || '#cc9845';
+        const finalColor = rawColor.startsWith('#') ? rawColor : `#${rawColor}`;
 
         return {
           type: 'Feature',
           geometry: { type: 'Polygon', coordinates: [ring] },
           properties: { 
             height: Number(col.height) || 5, 
-            color: col.baseColor || '#cc9845',
+            color: finalColor,
             name: item.name || col.name,
             description: item.description || col.description || "",
           }
         };
       })).filter(Boolean);
 
+      const geojsonData: any = { type: 'FeatureCollection', features };
+
       if (map.getSource(sourceId)) {
-        (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData({ type: 'FeatureCollection', features: features as any });
+        (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(geojsonData);
       } else {
-        map.addSource(sourceId, { type: 'geojson', data: { type: 'FeatureCollection', features: features as any } });
+        map.addSource(sourceId, { type: 'geojson', data: geojsonData });
+
         map.addLayer({
           id: layerId,
           type: 'fill-extrusion',
@@ -209,6 +235,25 @@ export default function Marker3DPlotter({ map, eventId }: { map: maplibregl.Map,
           }
         });
 
+        map.addLayer({
+          id: labelLayerId,
+          type: 'symbol',
+          source: sourceId,
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-size': 12,
+            'text-variable-anchor': ['center'],
+            'text-justify': 'center',
+            'text-allow-overlap': false,
+            'text-padding': 2
+          },
+          paint: {
+            'text-color': '#ffffff',
+            'text-halo-color': '#111111',
+            'text-halo-width': 1.5
+          }
+        });
+
         map.on('click', layerId, handleClick);
         map.on('mouseenter', layerId, handleMouseEnter);
         map.on('mouseleave', layerId, handleMouseLeave);
@@ -218,15 +263,11 @@ export default function Marker3DPlotter({ map, eventId }: { map: maplibregl.Map,
     if (map.isStyleLoaded()) draw(); else map.once('idle', draw);
 
     return () => {
-      // Cleanup markers
-      labelMarkersRef.current.forEach(m => m.remove());
-      labelMarkersRef.current = [];
-      
-      // Fix 4: Properly remove event listeners
       map.off('click', layerId, handleClick);
       map.off('mouseenter', layerId, handleMouseEnter);
       map.off('mouseleave', layerId, handleMouseLeave);
 
+      if (map.getLayer(labelLayerId)) map.removeLayer(labelLayerId);
       if (map.getLayer(layerId)) map.removeLayer(layerId);
       if (map.getSource(sourceId)) map.removeSource(sourceId);
     };
