@@ -80,8 +80,7 @@ export default function MapView({
         },
       ],
     });
-
-    map.addControl(draw, 'top-right');
+    map.addControl(draw as unknown as maplibregl.IControl, 'top-right');
     mapRef.current = map;
     drawRef.current = draw;
 

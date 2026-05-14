@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
-import { useEventId } from "@/app/eventadmin/Eventidcontext"; // ✅
+import { useEventId } from "@/app/eventadmin/Eventidcontext"; 
 
 interface EventData {
   id: string;

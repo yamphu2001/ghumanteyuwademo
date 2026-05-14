@@ -1,5 +1,5 @@
 
-// "use client";
+//sumit "use client";
 // import React, { useRef, useState, useEffect } from 'react';
 // import styles from './Map.module.css';
 // import { useMapInit } from '@/features/forevent/frontend/play/logic';
@@ -312,7 +312,9 @@ export default function MapContainer({ eventId }: MapContainerProps) {
           <MuseumMarkers map={map} eventId={eventId} />
           <PrizeSystem map={map} eventId={eventId} />
           <ServiceMarkers map={map} eventId={eventId} />
-          <Marker3DPlotter map={map} eventId={eventId} />
+          {isLoaded && map.current && (
+        <Marker3DPlotter map={map.current} eventId={eventId} />
+      )}
         </div>
       )}
 
