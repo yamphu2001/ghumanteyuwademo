@@ -1,3 +1,4 @@
+
 // "use client";
 // import React, { useEffect, useRef, useCallback, useState } from 'react';
 // import styles from './PlayerMarker.module.css';
@@ -270,25 +271,23 @@
 //             parent.style.visibility    = 'visible';
 //           }
 //         }}
-//         onClick={() =>
-//           coordsRef.current && map.current?.flyTo({ center: coordsRef.current, zoom: 18 })
-//         }
 //       />
 //     </div>
 //   );
 // }
 
 
+
 "use client";
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import styles from './PlayerMarker.module.css';
 
-// ── Split imports: GPS tracking from PlayerMarker logic, grid utils from GridPlot logic
+// ── Imports
 import { startPlayerTracking, stopPlayerTracking } from './logic';
 import { getCellId, generateCellPolygon } from '@/features/forevent/frontend/play/GridPlot/logic';
-
 import { LngLat } from '@/features/frontend/play/PlayerMarker/type';
 import { useGridStore } from '../GridPlot/GridStore';
+
 interface PlayerMarkerProps {
   map: React.MutableRefObject<any>;
   imagePath: string;
@@ -303,6 +302,7 @@ export default function PlayerMarker({ map, imagePath }: PlayerMarkerProps) {
   const coordsRef    = useRef<LngLat | null>(null);
   const markerRef    = useRef<HTMLDivElement>(null);
   const dotRef       = useRef<HTMLDivElement>(null);
+  
   const isWASDMode   = useRef(false);
   const wasdTimeout  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keysHeld     = useRef<Set<string>>(new Set());
@@ -318,7 +318,7 @@ export default function PlayerMarker({ map, imagePath }: PlayerMarkerProps) {
 
   const [gyroOn, setGyroOn] = useState(false);
 
-  // ── Grid store ─────────────────────────────────────────────────────────────
+  // ── Grid store
   const { addCell } = useGridStore() as any;
 
   // ── Sync marker to current coordsRef ──────────────────────────────────────
@@ -341,12 +341,18 @@ export default function PlayerMarker({ map, imagePath }: PlayerMarkerProps) {
     });
   }, [addCell]);
 
-  // ── WASD step ─────────────────────────────────────────────────────────────
+  // ── WASD step logic ───────────────────────────────────────────────────────
   const step = useCallback((dir: 'up' | 'down' | 'left' | 'right') => {
     const m = map.current;
     if (!m) return;
 
-    // Use current player coords, fall back to map center on first press
+    // Ensure we are in WASD mode
+    isWASDMode.current = true;
+    if (wasdTimeout.current) {
+      clearTimeout(wasdTimeout.current);
+      wasdTimeout.current = null;
+    }
+
     const base = coordsRef.current;
     const center = m.getCenter();
     let lng = base ? base[0] : center.lng;
@@ -357,22 +363,22 @@ export default function PlayerMarker({ map, imagePath }: PlayerMarkerProps) {
     if (dir === 'left')  lng -= STEP_SIZE;
     if (dir === 'right') lng += STEP_SIZE;
 
-    // Update the single source of truth
     coordsRef.current = [lng, lat];
-    isWASDMode.current = true;
-    if (wasdTimeout.current) clearTimeout(wasdTimeout.current);
 
     // Move map + marker
     m.easeTo({ center: [lng, lat], duration: MOVE_INTERVAL, easing: (t: number) => t });
     syncMarker();
 
-    // Paint grid cell
+    // Plot grid
     paintCell(lng, lat);
   }, [map, syncMarker, paintCell]);
 
   // ── RAF game loop for held keys ───────────────────────────────────────────
   const loop = useCallback((ts: number) => {
-    if (keysHeld.current.size === 0) { rafRef.current = null; return; }
+    if (keysHeld.current.size === 0) {
+      rafRef.current = null;
+      return;
+    }
 
     if (ts - lastTime.current >= MOVE_INTERVAL) {
       lastTime.current = ts;
@@ -394,9 +400,17 @@ export default function PlayerMarker({ map, imagePath }: PlayerMarkerProps) {
       if (!KEYS.includes(k)) return;
       e.preventDefault();
 
+      // Clear any pending revert to GPS
+      if (wasdTimeout.current) {
+        clearTimeout(wasdTimeout.current);
+        wasdTimeout.current = null;
+      }
+      isWASDMode.current = true;
+
       if (!keysHeld.current.has(k)) {
         keysHeld.current.add(k);
-        // Fire immediately on first press
+        
+        // Immediate movement on first press
         if (k === 'w' || k === 'arrowup')    step('up');
         if (k === 's' || k === 'arrowdown')  step('down');
         if (k === 'a' || k === 'arrowleft')  step('left');
@@ -414,8 +428,13 @@ export default function PlayerMarker({ map, imagePath }: PlayerMarkerProps) {
       keysHeld.current.delete(k);
 
       if (KEYS.includes(k)) {
-        // Resume GPS after 1 s of no WASD
-        wasdTimeout.current = setTimeout(() => { isWASDMode.current = false; }, 1000);
+        // Only set the timeout to return to GPS mode if NO keys are left held
+        if (keysHeld.current.size === 0) {
+          if (wasdTimeout.current) clearTimeout(wasdTimeout.current);
+          wasdTimeout.current = setTimeout(() => {
+            isWASDMode.current = false;
+          }, 1500); // 1.5s buffer before GPS takes back over
+        }
       }
 
       if (keysHeld.current.size === 0 && rafRef.current) {
@@ -433,30 +452,40 @@ export default function PlayerMarker({ map, imagePath }: PlayerMarkerProps) {
     };
   }, [step, loop]);
 
-  // ── GPS Tracking ──────────────────────────────────────────────────────────
+  // ── GPS Tracking (Real-time movement logic) ───────────────────────────────
   useEffect(() => {
     const m = map.current;
     if (!m) return;
 
+    // Initial capture
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords: LngLat = [pos.coords.longitude, pos.coords.latitude];
-        coordsRef.current = coords;
-        syncMarker();
-        m.easeTo({ center: coords, duration: 600, easing: (t: number) => t * (2 - t) });
+        if (!isWASDMode.current) {
+          coordsRef.current = coords;
+          syncMarker();
+          m.easeTo({ center: coords, duration: 600, easing: (t: number) => t * (2 - t) });
+          paintCell(coords[0], coords[1]);
+        }
       },
-      (err) => console.warn('[PlayerMarker] Initial GPS error:', err.code, err.message),
+      (err) => console.warn('[PlayerMarker] Initial GPS error:', err),
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 2000 }
     );
 
+    // Continuous watch
     const watchId = startPlayerTracking(
       (newCoords) => {
-        if (isWASDMode.current) return;   // ← WASD takes priority over GPS
+        // CRITICAL: If the user is currently using WASD, ignore the GPS update
+        if (isWASDMode.current) return; 
+        
         coordsRef.current = newCoords;
         syncMarker();
         m.easeTo({ center: newCoords, duration: 800, easing: (t: number) => t * (2 - t) });
+        
+        // Plot grid based on GPS movement
+        paintCell(newCoords[0], newCoords[1]);
       },
-      (err) => console.warn('[PlayerMarker] Watch GPS error:', err.code, err.message)
+      (err) => console.warn('[PlayerMarker] Watch GPS error:', err)
     );
 
     m.on('move',   syncMarker);
@@ -473,9 +502,9 @@ export default function PlayerMarker({ map, imagePath }: PlayerMarkerProps) {
       m.off('rotate', syncMarker);
       ro.disconnect();
     };
-  }, [map, syncMarker]);
+  }, [map, syncMarker, paintCell]);
 
-  // ── Gyro ──────────────────────────────────────────────────────────────────
+  // ── Gyro bearing logic ────────────────────────────────────────────────────
   const applyBearing = useCallback(() => {
     gyroRafRef.current = null;
     if (!gyroEnabledRef.current || !map.current || gyroPendingRef.current === null) return;
@@ -526,7 +555,6 @@ export default function PlayerMarker({ map, imagePath }: PlayerMarkerProps) {
     };
   }, [handleOrientation]);
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div
       ref={markerRef}
@@ -539,7 +567,6 @@ export default function PlayerMarker({ map, imagePath }: PlayerMarkerProps) {
         className={styles.playerIcon}
         alt="Player"
         onError={(e) => {
-          console.warn('[PlayerMarker] Image failed to load:', imagePath);
           const el = e.currentTarget;
           el.style.display = 'none';
           const parent = el.parentElement;

@@ -27,8 +27,6 @@ export const startPlayerTracking = (
     (pos) => {
       const newCoords: LngLat = [pos.coords.longitude, pos.coords.latitude];
       
-      // If accuracy is very poor (e.g. > 30m), you might want to ignore it too
-      // if (pos.coords.accuracy > 30) return; 
 
       if (!lastValidCoords) {
         lastValidCoords = newCoords;

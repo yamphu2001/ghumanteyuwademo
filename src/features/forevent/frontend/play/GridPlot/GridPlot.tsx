@@ -36,5 +36,5 @@ export default function GridPlot({ map }: { map: React.MutableRefObject<any> }) 
     if (src) src.setData(geoData[mode]);
   }, [geoData, mode]);
 
-  return null;  // ← GridDebug removed from here
+  return null;  
 }

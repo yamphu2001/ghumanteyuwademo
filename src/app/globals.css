@@ -46,3 +46,17 @@ body {
   background: #ffffff;
 }
 
+/* Mobile optimizations for MapLibre */
+@media (max-width: 768px) {
+  /* Increase tap target area visibility */
+  .maplibregl-canvas {
+    cursor: pointer !important;
+  }
+  
+  /* Optimize the popup for thumb-reachability */
+  .full-screen-popup-container {
+    padding: 20px;
+    display: flex;
+    align-items: flex-end; /* Keeps popup at the bottom for easy closing */
+  }
+}

@@ -11,22 +11,18 @@
   left: 0;
   width: 100%;
   height: 100%;
-  /* MapLibre owns this div entirely — no React children ever go here heheheee  .*/
   z-index: 1;
 }
 
 .overlayLayer {
-  /* ✅ Identical position and size to .mapCanvas */
-  /* project() coords computed from mapCanvas bounding rect */
-  /* This div has the SAME bounding rect → coords map 1:1 */
+  
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;  /* map still receives pan/zoom */
-  z-index: 2; /* overlay must sit above map canvas so marker DOM elements are visible */
-  /* NO overflow: hidden — markers at edges must not clip */
+  pointer-events: none;  
+  z-index: 2; 
 }
 
 .rankWidget {

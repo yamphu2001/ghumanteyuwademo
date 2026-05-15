@@ -5,7 +5,7 @@
   pointer-events: none;
 }
 
-/* Precise Side & Center Anchoring */
+
 .anchorLeft { left: 30px; }
 .anchorRight { right: 30px; }
 .anchorCenter { 
@@ -33,7 +33,7 @@
   border-radius: 50%;
 }
 
-/* Internal Alignment Classes - these position buttons within the relative wrapper */
+
 .leftAlign { 
   left: 0; 
 }
@@ -43,7 +43,7 @@
 }
 
 .centerAlign { 
-  left: -35px;  /* Half of 70px button width for proper centering */
+  left: -35px;  
 }
 
 .smallButton { 
@@ -58,9 +58,9 @@
   box-shadow: 0 8px 20px rgba(0,0,0,0.3); 
 }
 
-/* Scan button needs different centering */
+
 .scanButton.centerAlign {
-  left: -55px;  /* Half of 110px button width for proper centering */
+  left: -55px;  
 }
 
 .dimmer {
