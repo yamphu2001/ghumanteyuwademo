@@ -24,7 +24,7 @@ export const getLayout = (hand: HandPreference, eventId: string) => {
         iconName: 'Trophy' as const, 
         x: isCenter ? -110 : isLeft ? 40 : -40,
         y: isCenter ? -130 : -200, 
-        path: `/eventsmaker/${eventId}/quiz` 
+        path: `/eventsmaker/${eventId}/profile` 
       },
       { 
         iconName: 'User' as const, 

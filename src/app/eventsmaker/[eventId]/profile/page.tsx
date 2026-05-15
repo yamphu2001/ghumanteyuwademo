@@ -28,7 +28,7 @@
 //   quizPoints: number;
 //   quizProgress: string;
 //   totalPoints: number;
-//   prize: "claimed" | "not_claimed" | null;
+//   prize: "claimed" | "not_claimed" | "completed" | null;
 //   prizeName: string | null;
 //   roulettePrize: string | null;
 //   rank: number;
@@ -171,13 +171,26 @@
 //     </div>
 //   );
 
+//   // ─────────────────────────────────────────────
+//   // UPDATED QR LOGIC: Displaying all profile data
+//   // ─────────────────────────────────────────────
 //   const qrPayload = JSON.stringify({
+//     event: eventId,
 //     player: stats.username,
-//     totalScore: stats.totalPoints,
-//     rank: `#${stats.rank}`,
-//     prize: stats.prize || "pending",
-//     eventId: eventId
-//   });
+//     rank: stats.rank,
+//     score: stats.totalPoints,
+//     time: stats.timeTaken || "N/A",
+//     breakdown: {
+//       locations: `${stats.locationCount} (${stats.locationPoints}pts)`,
+//       scans: `${stats.qrCount} (${stats.qrPoints}pts)`,
+//       quiz: `${stats.quizPoints}pts (${stats.quizProgress})`,
+//       special: `${stats.specialCount} (${stats.specialPoints}pts)`
+//     },
+//     rewards: {
+//       status: stats.prize || "pending",
+//       prize: stats.roulettePrize || stats.prizeName || "None"
+//     }
+//   }, null, 2); // null, 2 adds formatting for easier reading when scanned
 
 //   return (
 //     <main className="min-h-screen bg-white p-5 pb-24 text-black">
@@ -226,13 +239,11 @@
 //           </div>
 //         )}
 
-//         {/* Dynamic Rows based on image_f5bcf8.png style */}
 //         <PointsRow icon={<MapPin size={15} />} label="Locations" subtitle={`${stats.locationCount} items`} points={stats.locationPoints} badgeColor="bg-gray-100 text-black" />
 //         <PointsRow icon={<QrCode size={15} />} label="QR Scans" subtitle={`${stats.qrCount} items`} points={stats.qrPoints} badgeColor="bg-gray-100 text-black" />
 //         <PointsRow icon={<Trophy size={15} />} label="Quiz Points" subtitle={stats.quizProgress} points={stats.quizPoints} badgeColor="bg-gray-100 text-black" />
 //         <PointsRow icon={<Star size={15} />} label="Special" subtitle={`${stats.specialCount} items`} points={stats.specialPoints} badgeColor="bg-gray-100 text-black" />
 
-//         {/* Total Score section matching image_f5bcf8.png bottom alignment */}
 //         <div className="pt-6 border-t border-gray-100 flex justify-between items-end">
 //           <div className="flex items-center gap-2 font-black text-black text-lg">
 //             <Zap size={22} className="text-red-600 fill-red-600" /> 
@@ -243,22 +254,27 @@
 //       </motion.section>
 
 //       {/* Prize Status */}
-//       <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={`rounded-4xl p-5 shadow-sm border mb-4 flex items-center justify-between ${stats.prize === "claimed" ? "bg-red-50 border-red-200" : "bg-white border-gray-100"}`}>
-//         <div className="flex items-center gap-3">
-//           <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${stats.prize === "claimed" ? "bg-red-600" : "bg-gray-200"}`}>
-//             <Gift size={18} className="text-white" />
-//           </div>
-//           <div>
-//             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Reward Status</p>
-//             <p className="font-black text-black text-sm">
-//               {stats.roulettePrize || stats.prizeName || (stats.prize === "claimed" ? "Prize Awarded" : "No Prize Claimed")}
-//             </p>
-//           </div>
-//         </div>
-//         <span className={`px-3 py-1 rounded-full text-[10px] font-black ${stats.prize === "claimed" ? "bg-red-600 text-white" : "bg-gray-100 text-gray-500"}`}>
-//           {stats.prize === "claimed" ? "CLAIMED" : "PENDING"}
-//         </span>
-//       </motion.section>
+//       {(() => {
+//         const prizeCompleted = stats.prize === "claimed" || stats.prize === "completed" || Boolean(stats.roulettePrize) || Boolean(stats.prizeName);
+//         return (
+//           <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={`rounded-4xl p-5 shadow-sm border mb-4 flex items-center justify-between ${prizeCompleted ? "bg-red-50 border-red-200" : "bg-white border-gray-100"}`}>
+//             <div className="flex items-center gap-3">
+//               <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${prizeCompleted ? "bg-red-600" : "bg-gray-200"}`}>
+//                 <Gift size={18} className="text-white" />
+//               </div>
+//               <div>
+//                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Reward Status</p>
+//                 <p className="font-black text-black text-sm">
+//                   {stats.roulettePrize || stats.prizeName || (prizeCompleted ? "Prize Awarded" : "No Prize Claimed")}
+//                 </p>
+//               </div>
+//             </div>
+//             <span className={`px-3 py-1 rounded-full text-[10px] font-black ${prizeCompleted ? "bg-red-600 text-white" : "bg-gray-100 text-gray-500"}`}>
+//               {prizeCompleted ? "COMPLETED" : "PENDING"}
+//             </span>
+//           </motion.section>
+//         );
+//       })()}
 
 //       {/* Staff Verification QR */}
 //       <motion.section initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="bg-white rounded-4xl p-8 text-center shadow-xl border border-gray-100">
@@ -480,13 +496,27 @@ export default function PlayerProfilePage() {
     </div>
   );
 
+  // ─────────────────────────────────────────────
+  // UPDATED QR LOGIC: Prioritizing Roulette Prize
+  // ─────────────────────────────────────────────
   const qrPayload = JSON.stringify({
+    event: eventId,
     player: stats.username,
-    totalScore: stats.totalPoints,
-    rank: `#${stats.rank}`,
-    prize: stats.prize || "pending",
-    eventId: eventId
-  });
+    rank: stats.rank,
+    score: stats.totalPoints,
+    time: stats.timeTaken || "N/A",
+    breakdown: {
+      locations: `${stats.locationCount} (${stats.locationPoints}pts)`,
+      scans: `${stats.qrCount} (${stats.qrPoints}pts)`,
+      quiz: `${stats.quizPoints}pts (${stats.quizProgress})`,
+      special: `${stats.specialCount} (${stats.specialPoints}pts)`
+    },
+    rewards: {
+      status: stats.prize || "pending",
+      // FIXED: prioritizes roulettePrize (the orange/reward) over map prizes
+      prize: stats.roulettePrize || "No Prize Won" 
+    }
+  }); 
 
   return (
     <main className="min-h-screen bg-white p-5 pb-24 text-black">
@@ -535,13 +565,11 @@ export default function PlayerProfilePage() {
           </div>
         )}
 
-        {/* Dynamic Rows based on image_f5bcf8.png style */}
         <PointsRow icon={<MapPin size={15} />} label="Locations" subtitle={`${stats.locationCount} items`} points={stats.locationPoints} badgeColor="bg-gray-100 text-black" />
         <PointsRow icon={<QrCode size={15} />} label="QR Scans" subtitle={`${stats.qrCount} items`} points={stats.qrPoints} badgeColor="bg-gray-100 text-black" />
         <PointsRow icon={<Trophy size={15} />} label="Quiz Points" subtitle={stats.quizProgress} points={stats.quizPoints} badgeColor="bg-gray-100 text-black" />
         <PointsRow icon={<Star size={15} />} label="Special" subtitle={`${stats.specialCount} items`} points={stats.specialPoints} badgeColor="bg-gray-100 text-black" />
 
-        {/* Total Score section matching image_f5bcf8.png bottom alignment */}
         <div className="pt-6 border-t border-gray-100 flex justify-between items-end">
           <div className="flex items-center gap-2 font-black text-black text-lg">
             <Zap size={22} className="text-red-600 fill-red-600" /> 
@@ -553,7 +581,7 @@ export default function PlayerProfilePage() {
 
       {/* Prize Status */}
       {(() => {
-        const prizeCompleted = stats.prize === "claimed" || stats.prize === "completed" || Boolean(stats.roulettePrize) || Boolean(stats.prizeName);
+        const prizeCompleted = stats.prize === "claimed" || stats.prize === "completed" || Boolean(stats.roulettePrize);
         return (
           <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={`rounded-4xl p-5 shadow-sm border mb-4 flex items-center justify-between ${prizeCompleted ? "bg-red-50 border-red-200" : "bg-white border-gray-100"}`}>
             <div className="flex items-center gap-3">
@@ -563,7 +591,7 @@ export default function PlayerProfilePage() {
               <div>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Reward Status</p>
                 <p className="font-black text-black text-sm">
-                  {stats.roulettePrize || stats.prizeName || (prizeCompleted ? "Prize Awarded" : "No Prize Claimed")}
+                  {stats.roulettePrize || (prizeCompleted ? "Prize Awarded" : "No Prize Claimed")}
                 </p>
               </div>
             </div>

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import { useParams ,useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, AlertCircle, Trophy, ChevronLeft, Loader2, Map } from "lucide-react";
 import { db, auth, rtdb } from "@/lib/firebase"; 
@@ -252,7 +252,7 @@ const saveToFirebase = async (finalScore: number) => {
         <h2 className="text-2xl font-black text-black mb-2">Quiz Locked</h2>
         <p className="text-black mb-2">You have completed <b>{lowProgress.pct}%</b> of tasks.</p>
         <p className="text-black font-bold mb-8 text-sm">Complete 80% task to get access to quiz, so spend more time in map to complete more tasks.</p>
-        <button onClick={() => router.back()} className="w-full py-5 bg-red-600 text-white rounded-3xl font-black shadow-lg">RETURN TO MAP</button>
+        <button onClick={() => router.push(`/eventsmaker/${eventId}/finish`)} className="w-full py-5 bg-red-600 text-white rounded-3xl font-black shadow-lg">VIEW FINAL STATS</button>
       </motion.div>
     </div>
   );
@@ -301,10 +301,10 @@ const saveToFirebase = async (finalScore: number) => {
         </div>
 
         <button 
-          onClick={() => router.back()} 
+          onClick={() => router.push(`/eventsmaker/${eventId}/finish`)} 
           className="w-full py-5 bg-red-600 text-white rounded-3xl font-black shadow-lg"
         >
-          RETURN TO MAP
+          VIEW FINAL STATS
         </button>
       </div>
     )}
