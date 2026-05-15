@@ -14,6 +14,7 @@
 // import StallMarkers from './components/StallMarkers';
 // import EventArea from './components/EventArea';
 // import ThreeDMarker from './components/3DMarker';
+// import MapLegend from './components/MapLegend';
 
 // interface BoundaryCoord { lat: number; lng: number; }
 
@@ -25,23 +26,32 @@
 //   stallMarkers?: any[];
 // }
 
-// const MAP_PITCH = 45; // single source of truth for pitch
+// const MAP_PITCH = 45;
 
 // export default function EventBlueprint() {
 //   const mapContainer = useRef<HTMLDivElement>(null);
 //   const map          = useRef<maplibregl.Map | null>(null);
 //   const router       = useRouter();
 
-//   const [events,          setEvents         ] = useState<EventData[]>([]);
-//   const [selectedEventId, setSelectedEventId] = useState('');
-//   const [mapInstance,     setMapInstance    ] = useState<maplibregl.Map | null>(null);
-//   const [showMap,         setShowMap        ] = useState(false);
+//   const [events,           setEvents          ] = useState<EventData[]>([]);
+//   const [selectedEventId,  setSelectedEventId ] = useState('');
+//   const [mapInstance,      setMapInstance     ] = useState<maplibregl.Map | null>(null);
+//   const [showMap,          setShowMap         ] = useState(false);
+//   const [isMobile,         setIsMobile        ] = useState(false);
 
-//   const [selectedServices,  setSelectedServices ] = useState<any[]>([]);
-//   const [selectedStalls,    setSelectedStalls   ] = useState<any[]>([]);
-//   const [selectedBoundaries,setSelectedBoundaries] = useState<BoundaryCoord[]>([]);
+//   const [selectedServices,   setSelectedServices  ] = useState<any[]>([]);
+//   const [selectedStalls,     setSelectedStalls    ] = useState<any[]>([]);
+//   const [selectedBoundaries, setSelectedBoundaries] = useState<BoundaryCoord[]>([]);
 
-//   // ── Fetch event list once on mount ──────────────────────────────────────────
+//   // ── Detect mobile ──────────────────────────────────────────────────────────
+//   useEffect(() => {
+//     const check = () => setIsMobile(window.innerWidth < 768);
+//     check();
+//     window.addEventListener('resize', check);
+//     return () => window.removeEventListener('resize', check);
+//   }, []);
+
+//   // ── Fetch event list ───────────────────────────────────────────────────────
 //   useEffect(() => {
 //     (async () => {
 //       try {
@@ -53,34 +63,34 @@
 //     })();
 //   }, []);
 
-//   // ── Initialize map when showMap becomes true ─────────────────────────────────
-// useEffect(() => {
-//   if (!showMap || map.current || !mapContainer.current) return;
+//   // ── Initialize map ─────────────────────────────────────────────────────────
+//   useEffect(() => {
+//     if (!showMap || map.current || !mapContainer.current) return;
 
-//   map.current = new maplibregl.Map({
-//     container: mapContainer.current,
-//     style: 'https://tiles.openfreemap.org/styles/liberty',
-//     center: [85.3540, 27.6862],
-//     zoom: 17,
-//     minZoom: 16,   // Setting minimum zoom (world view)
-//     maxZoom: 20,  // Setting maximum zoom (street detail)
-//     pitch: MAP_PITCH,
-//     bearing: 0,
-//   });
+//     map.current = new maplibregl.Map({
+//       container: mapContainer.current,
+//       style: 'https://tiles.openfreemap.org/styles/bright',
+//       center: [85.3540, 27.6862],
+//       zoom: 17,
+//       minZoom: 16,
+//       maxZoom: 20,
+//       pitch: MAP_PITCH,
+//       bearing: 0,
+//     });
 
-//   map.current.on('load', () => {
-//     console.log('[Map] Style loaded ✅');
-//     setMapInstance(map.current);
-//   });
+//     map.current.on('load', () => {
+//       console.log('[Map] Style loaded ✅');
+//       setMapInstance(map.current);
+//     });
 
-//   return () => {
-//     map.current?.remove();
-//     map.current = null;
-//     setMapInstance(null);
-//   };
-// }, [showMap]);
+//     return () => {
+//       map.current?.remove();
+//       map.current = null;
+//       setMapInstance(null);
+//     };
+//   }, [showMap]);
 
-//   // ── Event selection ──────────────────────────────────────────────────────────
+//   // ── Event selection ────────────────────────────────────────────────────────
 //   const handleEventChange = (id: string) => {
 //     if (!id) return;
 //     setSelectedEventId(id);
@@ -95,16 +105,19 @@
 
 //     if (!event.boundaryCoords?.length) return;
 
-//     const [first] = event.boundaryCoords;
+//     // Fly to centroid of the full event boundary so the whole area is centred
+//     const coords = event.boundaryCoords;
+//     const centerLat = coords.reduce((sum, c) => sum + c.lat, 0) / coords.length;
+//     const centerLng = coords.reduce((sum, c) => sum + c.lng, 0) / coords.length;
 
-//     // flyTo: MUST include pitch so 3D extrusions stay visible
 //     const fly = () => {
 //       if (map.current?.loaded()) {
 //         map.current.flyTo({
-//           center: [first.lng, first.lat],
+//           center: [centerLng, centerLat],
 //           zoom: 17,
-//           pitch: MAP_PITCH,   // ← keeps extrusions visible after the fly
+//           pitch: MAP_PITCH,
 //           essential: true,
+//           speed: 1.2,
 //         });
 //       } else {
 //         setTimeout(fly, 150);
@@ -113,6 +126,39 @@
 //     fly();
 //   };
 
+//   // ── Control panel styles ───────────────────────────────────────────────────
+//   const panelStyle: React.CSSProperties = showMap
+//     ? {
+//         position: 'absolute',
+//         // Mobile: top bar full-width; Desktop: top-left card
+//         top: isMobile ? 0 : 20,
+//         left: isMobile ? 0 : 20,
+//         right: isMobile ? 0 : 'auto',
+//         zIndex: 100,
+//         background: 'white',
+//         padding: isMobile ? '12px 16px' : '24px',
+//         borderRadius: isMobile ? '0 0 12px 12px' : '12px',
+//         boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+//         border: isMobile ? 'none' : '1px solid #eee',
+//         borderBottom: isMobile ? '1px solid #eee' : undefined,
+//         display: 'flex',
+//         flexDirection: isMobile ? 'row' : 'column',
+//         alignItems: isMobile ? 'center' : 'stretch',
+//         gap: isMobile ? '10px' : '0',
+//         minWidth: isMobile ? 'unset' : '300px',
+//       }
+//     : {
+//         position: 'relative',
+//         background: 'white',
+//         padding: '24px',
+//         borderRadius: '12px',
+//         boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+//         border: '1px solid #eee',
+//         textAlign: 'center',
+//         width: isMobile ? 'calc(100vw - 40px)' : '300px',
+//         maxWidth: '360px',
+//       };
+
 //   return (
 //     <div style={{
 //       position: 'relative', width: '100%', height: '100vh',
@@ -120,26 +166,35 @@
 //       background: '#f5f5f5',
 //     }}>
 
-//       {/* ── Control panel ────────────────────────────────────────────────────── */}
-//       <div style={{
-//         position: showMap ? 'absolute' : 'relative',
-//         top: showMap ? 20 : 'auto',
-//         left: showMap ? 20 : 'auto',
-//         zIndex: 100,
-//         background: 'white', padding: '24px', borderRadius: '12px',
-//         boxShadow: '0 4px 15px rgba(0,0,0,0.1)', border: '1px solid #eee',
-//         textAlign: 'center', minWidth: '300px',
-//       }}>
-//         <h2 style={{ margin: '0 0 15px 0', fontSize: '18px', color: '#333' }}>
-//           {showMap ? 'Event Loaded' : 'Welcome! Please Select an Event'}
-//         </h2>
+//       {/* ── Control panel ──────────────────────────────────────────────────── */}
+//       <div style={panelStyle}>
+//         {/* Title — hidden on mobile when map is shown */}
+//         {(!isMobile || !showMap) && (
+//           <h2 style={{
+//             margin: isMobile ? 0 : '0 0 15px 0',
+//             fontSize: isMobile && showMap ? '14px' : '18px',
+//             color: '#333',
+//             whiteSpace: 'nowrap',
+//           }}>
+//             {showMap ? 'Event Loaded' : 'Welcome! Select an Event'}
+//           </h2>
+//         )}
 
 //         <select
 //           value={selectedEventId}
 //           onChange={(e) => handleEventChange(e.target.value)}
-//           style={{ padding: '12px', borderRadius: '8px', width: '100%', cursor: 'pointer', color: 'black', border: '1px solid #ccc' }}
+//           style={{
+//             padding: isMobile && showMap ? '8px 10px' : '12px',
+//             borderRadius: '8px',
+//             width: isMobile && showMap ? 'auto' : '100%',
+//             flex: isMobile && showMap ? 1 : undefined,
+//             cursor: 'pointer',
+//             color: 'black',
+//             border: '1px solid #ccc',
+//             fontSize: isMobile ? '14px' : '16px',
+//           }}
 //         >
-//           <option value="">Select Event ID</option>
+//           <option value="">Select Event</option>
 //           {events.map(ev => (
 //             <option key={ev.id} value={ev.id}>{ev.eventName || ev.id}</option>
 //           ))}
@@ -149,33 +204,51 @@
 //           <button
 //             onClick={() => router.push('/login')}
 //             style={{
-//               marginTop: '15px', display: 'block', width: '100%', padding: '10px',
-//               background: '#007bff', color: 'white', border: 'none',
-//               borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold',
+//               marginTop: isMobile ? 0 : '15px',
+//               display: 'block',
+//               width: isMobile ? 'auto' : '100%',
+//               padding: isMobile ? '8px 14px' : '10px',
+//               background: '#007bff',
+//               color: 'white',
+//               border: 'none',
+//               borderRadius: '8px',
+//               cursor: 'pointer',
+//               fontWeight: 'bold',
+//               fontSize: isMobile ? '13px' : '15px',
+//               whiteSpace: 'nowrap',
 //             }}
 //           >
-//             Lets Play!
+//             {isMobile ? '▶ Play' : 'Lets Play!'}
 //           </button>
 //         )}
 //       </div>
 
-//       {/* ── Map + overlays ────────────────────────────────────────────────────── */}
+//       {/* ── Map + overlays ─────────────────────────────────────────────────── */}
 //       {showMap && (
 //         <div style={{ position: 'absolute', inset: 0 }}>
 //           <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
 
-//           {/* All overlays receive the live MapLibre instance via mapInstance state */}
-//           <EventArea        map={mapInstance} boundaryCoords={selectedBoundaries} />
-//           <LocationMarkers  map={mapInstance} eventId={selectedEventId} />
-//           <QRCodeMarkers    map={mapInstance} eventId={selectedEventId} />
+//           <EventArea         map={mapInstance} boundaryCoords={selectedBoundaries} />
+//           <LocationMarkers   map={mapInstance} eventId={selectedEventId} />
+//           <QRCodeMarkers     map={mapInstance} eventId={selectedEventId} />
 //           <ServiceBoundaries map={mapInstance} services={selectedServices} />
-//           <StallMarkers     map={mapInstance} stalls={selectedStalls} />
-//           <ThreeDMarker     map={mapInstance} eventId={selectedEventId} />
+//           <StallMarkers      map={mapInstance} stalls={selectedStalls} />
+//           <ThreeDMarker      map={mapInstance} eventId={selectedEventId} />
+
+//           <MapLegend
+//             eventId={selectedEventId}
+//             services={selectedServices}
+//             stalls={selectedStalls}
+//             boundaryCoords={selectedBoundaries}
+//             map={mapInstance}
+//             isMobile={isMobile}
+//           />
 //         </div>
 //       )}
 //     </div>
 //   );
 // }
+
 
 
 'use client';
@@ -193,6 +266,7 @@ import ServiceBoundaries from './components/ServiceBoundaries';
 import StallMarkers from './components/StallMarkers';
 import EventArea from './components/EventArea';
 import ThreeDMarker from './components/3DMarker';
+import MapLegend from './components/MapLegend';
 
 interface BoundaryCoord { lat: number; lng: number; }
 
@@ -208,19 +282,28 @@ const MAP_PITCH = 45;
 
 export default function EventBlueprint() {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map | null>(null);
-  const router = useRouter();
+  const map          = useRef<maplibregl.Map | null>(null);
+  const router       = useRouter();
 
-  const [events, setEvents] = useState<EventData[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState('');
-  const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null);
-  const [showMap, setShowMap] = useState(false);
-  const [isListVisible, setIsListVisible] = useState(false);
+  const [events,           setEvents          ] = useState<EventData[]>([]);
+  const [selectedEventId,  setSelectedEventId ] = useState('');
+  const [mapInstance,      setMapInstance     ] = useState<maplibregl.Map | null>(null);
+  const [showMap,          setShowMap         ] = useState(false);
+  const [isMobile,         setIsMobile        ] = useState(false);
 
-  const [selectedServices, setSelectedServices] = useState<any[]>([]);
-  const [selectedStalls, setSelectedStalls] = useState<any[]>([]);
+  const [selectedServices,   setSelectedServices  ] = useState<any[]>([]);
+  const [selectedStalls,     setSelectedStalls    ] = useState<any[]>([]);
   const [selectedBoundaries, setSelectedBoundaries] = useState<BoundaryCoord[]>([]);
 
+  // ── Detect mobile ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  // ── Fetch event list ───────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -232,12 +315,13 @@ export default function EventBlueprint() {
     })();
   }, []);
 
+  // ── Initialize map ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!showMap || map.current || !mapContainer.current) return;
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://tiles.openfreemap.org/styles/liberty',
+      style: 'https://tiles.openfreemap.org/styles/bright',
       center: [85.3540, 27.6862],
       zoom: 17,
       minZoom: 16,
@@ -247,6 +331,7 @@ export default function EventBlueprint() {
     });
 
     map.current.on('load', () => {
+      console.log('[Map] Style loaded ✅');
       setMapInstance(map.current);
     });
 
@@ -257,6 +342,7 @@ export default function EventBlueprint() {
     };
   }, [showMap]);
 
+  // ── Event selection ────────────────────────────────────────────────────────
   const handleEventChange = (id: string) => {
     if (!id) return;
     setSelectedEventId(id);
@@ -271,14 +357,19 @@ export default function EventBlueprint() {
 
     if (!event.boundaryCoords?.length) return;
 
-    const [first] = event.boundaryCoords;
+    // Fly to centroid of the full event boundary so the whole area is centred
+    const coords = event.boundaryCoords;
+    const centerLat = coords.reduce((sum, c) => sum + c.lat, 0) / coords.length;
+    const centerLng = coords.reduce((sum, c) => sum + c.lng, 0) / coords.length;
+
     const fly = () => {
       if (map.current?.loaded()) {
         map.current.flyTo({
-          center: [first.lng, first.lat],
+          center: [centerLng, centerLat],
           zoom: 17,
           pitch: MAP_PITCH,
           essential: true,
+          speed: 1.2,
         });
       } else {
         setTimeout(fly, 150);
@@ -287,33 +378,87 @@ export default function EventBlueprint() {
     fly();
   };
 
+  // ── Control panel styles ───────────────────────────────────────────────────
+  // ── Control panel styles ───────────────────────────────────────────────────
+  const panelStyle: React.CSSProperties = showMap
+    ? {
+        position: 'absolute',
+        top: isMobile ? 0 : 20,
+        left: isMobile ? 0 : 20,
+        right: isMobile ? 0 : 'auto',
+        zIndex: 100,
+        background: 'white',
+        padding: isMobile ? '12px 16px' : '24px',
+        borderRadius: isMobile ? '0 0 12px 12px' : '12px',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+        
+        // FIX: Use longhand properties to avoid shorthand conflicts
+        borderStyle: 'solid',
+        borderLeftWidth: isMobile ? 0 : 1,
+        borderRightWidth: isMobile ? 0 : 1,
+        borderTopWidth: isMobile ? 0 : 1,
+        borderBottomWidth: 1, // Always 1px in this state
+        borderColor: '#eee',
+
+        display: 'flex',
+        flexDirection: isMobile ? 'row' : 'column',
+        alignItems: isMobile ? 'center' : 'stretch',
+        gap: isMobile ? '10px' : '0',
+        minWidth: isMobile ? 'unset' : '300px',
+      }
+    : {
+        position: 'relative',
+        background: 'white',
+        padding: '24px',
+        borderRadius: '12px',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+        
+        // FIX: Consistently use longhand here too
+        borderStyle: 'solid',
+        borderWidth: '1px',
+        borderColor: '#eee',
+
+        textAlign: 'center',
+        width: isMobile ? 'calc(100vw - 40px)' : '300px',
+        maxWidth: '360px',
+      };
+
   return (
     <div style={{
       position: 'relative', width: '100%', height: '100vh',
       display: 'flex', justifyContent: 'center', alignItems: 'center',
-      background: '#f5f5f5', overflow: 'hidden'
+      background: '#f5f5f5',
     }}>
 
-      {/* ── Control panel ────────────────────────────────────────────────────── */}
-      <div style={{
-        position: showMap ? 'absolute' : 'relative',
-        top: showMap ? 20 : 'auto',
-        left: showMap ? 20 : 'auto',
-        zIndex: 100,
-        background: 'white', padding: '24px', borderRadius: '12px',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.1)', border: '1px solid #eee',
-        textAlign: 'center', minWidth: '300px',
-      }}>
-        <h2 style={{ margin: '0 0 15px 0', fontSize: '18px', color: '#333' }}>
-          {showMap ? 'Event Loaded' : 'Welcome! Please Select an Event'}
-        </h2>
+      {/* ── Control panel ──────────────────────────────────────────────────── */}
+      <div style={panelStyle}>
+        {/* Title — hidden on mobile when map is shown */}
+        {(!isMobile || !showMap) && (
+          <h2 style={{
+            margin: isMobile ? 0 : '0 0 15px 0',
+            fontSize: isMobile && showMap ? '14px' : '18px',
+            color: '#333',
+            whiteSpace: 'nowrap',
+          }}>
+            {showMap ? 'Event Loaded' : 'Welcome! Select an Event'}
+          </h2>
+        )}
 
         <select
           value={selectedEventId}
           onChange={(e) => handleEventChange(e.target.value)}
-          style={{ padding: '12px', borderRadius: '8px', width: '100%', cursor: 'pointer', color: 'black', border: '1px solid #ccc' }}
+          style={{
+            padding: isMobile && showMap ? '8px 10px' : '12px',
+            borderRadius: '8px',
+            width: isMobile && showMap ? 'auto' : '100%',
+            flex: isMobile && showMap ? 1 : undefined,
+            cursor: 'pointer',
+            color: 'black',
+            border: '1px solid #ccc',
+            fontSize: isMobile ? '14px' : '16px',
+          }}
         >
-          <option value="">Select Event ID</option>
+          <option value="">Select Event</option>
           {events.map(ev => (
             <option key={ev.id} value={ev.id}>{ev.eventName || ev.id}</option>
           ))}
@@ -321,86 +466,52 @@ export default function EventBlueprint() {
 
         {showMap && (
           <button
-            onClick={() => router.push('/login')}
+            onClick={() => {
+              // Unmount map overlays first so 3DMarker cleanup runs while
+              // the map is still alive, then navigate after React flushes.
+              setShowMap(false);
+              setTimeout(() => router.push('/login'), 50);
+            }}
             style={{
-              marginTop: '15px', display: 'block', width: '100%', padding: '10px',
-              background: '#007bff', color: 'white', border: 'none',
-              borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold',
+              marginTop: isMobile ? 0 : '15px',
+              display: 'block',
+              width: isMobile ? 'auto' : '100%',
+              padding: isMobile ? '8px 14px' : '10px',
+              background: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: isMobile ? '13px' : '15px',
+              whiteSpace: 'nowrap',
             }}
           >
-            Lets Play!
+            {isMobile ? '▶ Play' : 'Lets Play!'}
           </button>
         )}
       </div>
 
-      {/* ── List Toggle Button ─────────────────────────────────────────────── */}
-      {showMap && (
-        <button
-          onClick={() => setIsListVisible(!isListVisible)}
-          style={{
-            position: 'absolute', top: 20, right: 20, zIndex: 110,
-            padding: '12px 20px', background: '#333', color: 'white',
-            border: 'none', borderRadius: '30px', cursor: 'pointer',
-            boxShadow: '0 4px 10px rgba(0,0,0,0.2)', fontWeight: 'bold'
-          }}
-        >
-          {isListVisible ? '✖ Close List' : '📋 View Objects List'}
-        </button>
-      )}
-
-      {/* ── List Sidebar Overlay (Updated to match image_94621a.png) ────────── */}
-      {showMap && isListVisible && (
-        <div style={{
-          position: 'absolute', top: 80, right: 20, zIndex: 105,
-          width: '300px', maxHeight: '70vh', background: 'white',
-          borderRadius: '16px', padding: '24px', overflowY: 'auto',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid #eee',
-          color: 'black', fontFamily: 'sans-serif'
-        }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: 'bold' }}>Map Objects</h3>
-          <div style={{ height: '1px', background: '#eee', marginBottom: '20px' }}></div>
-          
-          <div style={{ marginBottom: '24px' }}>
-            <h4 style={{ color: '#007bff', fontSize: '15px', fontWeight: '600', marginBottom: '12px', textTransform: 'uppercase' }}>
-              3D STALLS ({selectedStalls.length})
-            </h4>
-            {selectedStalls.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {selectedStalls.map((s, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '16px' }}>
-                    <span style={{ color: '#e91e63' }}>📍</span> 
-                    <span style={{ color: '#333' }}>{s.name || `Stall ${idx + 1}`}</span>
-                  </div>
-                ))}
-              </div>
-            ) : <p style={{ fontSize: '14px', color: '#999' }}>No stalls found</p>}
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <h4 style={{ color: '#28a745', fontSize: '15px', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase' }}>
-              SERVICES ({selectedServices.length})
-            </h4>
-            {selectedServices.length === 0 && (
-              <p style={{ fontSize: '14px', color: '#999' }}>No services found</p>
-            )}
-          </div>
-
-          <p style={{ fontSize: '12px', color: '#ccc', textAlign: 'center', marginTop: '16px' }}>
-            Live Event ID: {selectedEventId}
-          </p>
-        </div>
-      )}
-
-      {/* ── Map + overlays ────────────────────────────────────────────────────── */}
+      {/* ── Map + overlays ─────────────────────────────────────────────────── */}
       {showMap && (
         <div style={{ position: 'absolute', inset: 0 }}>
           <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
-          <EventArea map={mapInstance} boundaryCoords={selectedBoundaries} />
-          <LocationMarkers map={mapInstance} eventId={selectedEventId} />
-          <QRCodeMarkers map={mapInstance} eventId={selectedEventId} />
+
+          <EventArea         map={mapInstance} boundaryCoords={selectedBoundaries} />
+          <LocationMarkers   map={mapInstance} eventId={selectedEventId} />
+          <QRCodeMarkers     map={mapInstance} eventId={selectedEventId} />
           <ServiceBoundaries map={mapInstance} services={selectedServices} />
-          <StallMarkers map={mapInstance} stalls={selectedStalls} />
-          <ThreeDMarker map={mapInstance} eventId={selectedEventId} />
+          <StallMarkers      map={mapInstance} stalls={selectedStalls} />
+          <ThreeDMarker      map={mapInstance} eventId={selectedEventId} />
+
+          <MapLegend
+            eventId={selectedEventId}
+            services={selectedServices}
+            stalls={selectedStalls}
+            boundaryCoords={selectedBoundaries}
+            map={mapInstance}
+            isMobile={isMobile}
+          />
         </div>
       )}
     </div>
