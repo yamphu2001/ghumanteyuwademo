@@ -1,0 +1,351 @@
+.container {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top, rgba(230, 57, 70, 0.08), transparent 35%),
+    linear-gradient(to bottom, #ffffff 0%, #f7f7f5 100%);
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.015) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+}
+
+.main {
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+
+  margin: 0 auto;
+  padding: 42px 22px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* HEADER */
+
+.branding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  animation: fadeUp 0.7s ease;
+}
+
+.logo {
+  margin-bottom: 18px;
+}
+
+.title {
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -1.8px;
+
+  color: #111111;
+
+  margin-bottom: 14px;
+}
+
+.subtitle {
+  max-width: 320px;
+
+  font-size: 14px;
+  line-height: 1.7;
+  font-weight: 500;
+
+  color: #666666;
+}
+
+/* GRID */
+
+.permissionsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  margin: 44px 0 32px;
+
+  animation: fadeUp 0.9s ease;
+}
+
+/* CARDS */
+
+.card {
+  position: relative;
+
+  padding: 22px;
+  border-radius: 28px;
+
+  backdrop-filter: blur(12px);
+
+  background: rgba(255,255,255,0.82);
+
+  border: 1px solid rgba(0,0,0,0.06);
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 16px 40px rgba(0,0,0,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.cardTop {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.icon {
+  width: 54px;
+  height: 54px;
+
+  border-radius: 18px;
+
+  background: rgba(0,0,0,0.04);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 24px;
+
+  flex-shrink: 0;
+}
+
+.card h2 {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+
+  color: #111111;
+
+  margin-bottom: 6px;
+}
+
+.card p {
+  font-size: 13px;
+  line-height: 1.6;
+
+  color: #666666;
+}
+
+/* BUTTONS */
+
+.permissionButton {
+  width: 100%;
+
+  margin-top: 18px;
+
+  height: 48px;
+
+  border: none;
+  border-radius: 16px;
+
+  background: #111111;
+  color: white;
+
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    background 0.2s ease;
+}
+
+.permissionButton:hover {
+  transform: translateY(-1px);
+}
+
+.permissionButton:active {
+  transform: scale(0.98);
+}
+
+/* STATES */
+
+.granted {
+  border-color: rgba(45, 184, 75, 0.35);
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(45, 184, 75, 0.08),
+      rgba(255,255,255,0.92)
+    );
+}
+
+.granted .icon {
+  background: rgba(45, 184, 75, 0.12);
+}
+
+.granted .permissionButton {
+  background: #2DB84B;
+}
+
+.denied {
+  border-color: rgba(230, 57, 70, 0.28);
+
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(230, 57, 70, 0.06),
+      rgba(255,255,255,0.94)
+    );
+}
+
+.denied .icon {
+  background: rgba(230, 57, 70, 0.1);
+}
+
+.denied .permissionButton {
+  background: #E63946;
+}
+
+.warning {
+  margin-bottom: 18px;
+
+  padding: 16px 18px;
+
+  border-radius: 18px;
+
+  background: rgba(230, 57, 70, 0.08);
+
+  border: 1px solid rgba(230, 57, 70, 0.12);
+
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 600;
+
+  color: #b4232d;
+
+  text-align: center;
+
+  animation: fadeUp 0.3s ease;
+}
+
+/* CONTINUE */
+
+/* Base styling for the main CTA container button */
+.continueButton {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 2px solid #000000; /* Keeps a bold, high-contrast border profile */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* HARD LOCKED STATE (Grey, unclickable) */
+.continueButton.locked {
+  background-color: #e5e7eb; /* Dull slate grey background */
+  color: #9ca3af;            /* Faded grey text color */
+  cursor: not-allowed;       /* Changes user cursor to blocked icon */
+  opacity: 0.8;
+}
+
+/* ACTIVE READY STATE (Turns Green & Clickable) */
+.continueButton.ready {
+  background-color: #22c55e; /* Vibrant interactive green */
+  color: #ffffff;            /* High-contrast crisp white text */
+  cursor: pointer;
+  box-shadow: 4px 4px 0px #000000; /* Sharp offset drop-shadow for a clean industrial look */
+}
+
+/* Interactive feedback loop for the active button state */
+.continueButton.ready:hover {
+  background-color: #16a34a; /* Deeper accent green on cursor hover */
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.continueButton.ready:active {
+  transform: translate(0px, 0px);
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.continueButton:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.18);
+}
+
+.continueButton:active {
+  transform: scale(0.985);
+}
+
+.ready {
+  background:
+    linear-gradient(
+      135deg,
+      #111111 0%,
+      #1f1f1f 100%
+    );
+}
+
+/* ANIMATION */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 420px) {
+  .title {
+    font-size: 30px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .main {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
