@@ -1,28 +1,7 @@
-// import { initializeApp, getApps, getApp } from "firebase/app";
-// import { getAuth } from "firebase/auth";
-// import { getFirestore } from "firebase/firestore";
-
-// const firebaseConfig = {
-//   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-//   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-//   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-//   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-//   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-//   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-// };
-
-// // Initialize Firebase only once to prevent errors during hot-reloading
-// const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-// export const auth = getAuth(app);
-// export const db = getFirestore(app);
-
-
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-// 1. Import getDatabase
-import { getDatabase } from "firebase/database"; 
+import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
+import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -36,8 +15,22 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Suppress Firebase offline warning noise in the console
+if (typeof window !== "undefined") {
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    const msg = String(args[0] || "");
+    if (msg.includes("@firebase/firestore") && msg.includes("Could not reach")) return;
+    originalWarn(...args);
+  };
+}
 
-// 2. Initialize and export the rtdb instance
+export const auth = getAuth(app);
+
+// initializeFirestore with persistentLocalCache replaces the deprecated
+// enableIndexedDbPersistence() — works across multiple tabs without errors
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache(),
+});
+
 export const rtdb = getDatabase(app);

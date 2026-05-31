@@ -4,7 +4,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
+import { useOfflineQueue } from '@/features/forevent/play/Useofflinequeue';
 import QRScanner from "../qrscanner";
 
 const END_QR_PREFIX = "ghumanteyuwa.com/eventsmaker/";
@@ -62,9 +63,7 @@ export async function handleRouletteScan(
       return { success: true, message: "Valid finish QR scanned.", askConfirmation: true };
     }
 
-    // Write only if it doesn't exist yet
-    await setDoc(playerLogRef, { finishat: new Date().toLocaleString() }, { merge: true });
-
+    // Caller will perform the write (so UI can enqueue it for offline persistence)
     return { success: true, message: "Finish time recorded!", routeToFinish: true };
   } catch (error) {
     console.error("[EndGame] Error processing finish registration:", error);
@@ -86,6 +85,7 @@ export default function FinishGame({ uid, eventId, onClose, initialValue }: Fini
   const [showConfirm, setShowConfirm] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const { enqueue } = useOfflineQueue(eventId);
 
   // If value already came from qrcodescanner, skip camera and show confirm immediately
   useEffect(() => {
@@ -131,6 +131,13 @@ export default function FinishGame({ uid, eventId, onClose, initialValue }: Fini
     const result = await handleRouletteScan(uid, eventId, pendingValue, true);
 
     if (result.routeToFinish) {
+      // enqueue the finish time write so it's persisted while offline
+      await enqueue({
+        type: 'set',
+        path: `events/${eventId}/player_log/${uid}`,
+        data: { finishat: new Date().toLocaleString() },
+        merge: true,
+      });
       router.push(`/eventsmaker/${eventId}/finish`);
     } else {
       setStatusMessage(result.message);

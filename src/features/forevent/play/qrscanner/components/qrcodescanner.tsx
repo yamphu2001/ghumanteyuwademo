@@ -4,7 +4,8 @@
 import { useState, useCallback } from "react";
 import { collection, query, where, getDocs, doc, updateDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { getDatabase, ref, update, get } from "firebase/database";
+import { getDatabase, ref, get } from "firebase/database";
+import { useOfflineQueue } from '@/features/forevent/play/Useofflinequeue';
 import QRScanner from "../qrscanner";
 import { MarkerPopup, QRcodeMarkerData } from "@/features/forevent/play/Markers/QRcodeMarkers/popup";
 
@@ -21,6 +22,7 @@ export default function QRCodeScanner({ eventId, userId, onCloseScanner }: QRCod
   const [foundMarker, setFoundMarker] = useState<QRcodeMarkerData | null>(null);
   const [lastScannedId, setLastScannedId] = useState<string>("");
   const [scannerActive, setScannerActive] = useState<boolean>(true);
+  const { enqueue } = useOfflineQueue(eventId);
 
   const handleScan = useCallback(
     async (scannedValue: string) => {
@@ -108,12 +110,17 @@ export default function QRCodeScanner({ eventId, userId, onCloseScanner }: QRCod
           const now = new Date();
           const readableTime = now.toLocaleString();
 
-          await update(scannedRef, {
-            qrCodeId: marker.qrCodeId,
-            pointsEarned: marker.points,
-            markerName: marker.name,
-            scannedAt: readableTime,
-          });
+                  // Use queued RTDB write so scan is persisted if offline/reloaded
+                  await enqueue({
+                    type: 'rtdbUpdate',
+                    path: `eventsProgress/${eventId}/${userId}/scannedQRCodes/${marker.id}`,
+                    data: {
+                      qrCodeId: marker.qrCodeId,
+                      pointsEarned: marker.points,
+                      markerName: marker.name,
+                      scannedAt: readableTime,
+                    },
+                  });
 
           console.log("[RTDB] Scan recorded successfully.");
 
@@ -131,10 +138,14 @@ export default function QRCodeScanner({ eventId, userId, onCloseScanner }: QRCod
 
             console.log(`[Firestore] Calculated total qrPoints: ${totalQrPoints}`);
 
-            const playerLogRef = doc(db, "events", eventId, "player_log", userId);
-            await setDoc(playerLogRef, { qrPoints: totalQrPoints }, { merge: true });
+            await enqueue({
+              type: 'set',
+              path: `events/${eventId}/player_log/${userId}`,
+              data: { qrPoints: totalQrPoints },
+              merge: true,
+            });
 
-            console.log(`[Firestore] player_log/${userId} → qrPoints: ${totalQrPoints}`);
+            console.log(`[OfflineQueue] queued player_log/${userId} → qrPoints: ${totalQrPoints}`);
           } catch (tallyErr) {
             console.error("[Firestore] Failed to update player_log qrPoints:", tallyErr);
           }
@@ -144,11 +155,13 @@ export default function QRCodeScanner({ eventId, userId, onCloseScanner }: QRCod
 
         // ── Step 5: Mark QR marker as scanned in Firestore ──
         try {
-          await updateDoc(doc(db, "events", eventId, "qrcodemarkers", docSnap.id), {
-            scanned: true,
+          await enqueue({
+            type: 'update',
+            path: `events/${eventId}/qrcodemarkers/${docSnap.id}`,
+            data: { scanned: true },
           });
         } catch (updateError) {
-          console.warn("[QRCodeScanner] Failed to persist scanned flag:", updateError);
+          console.warn("[QRCodeScanner] Failed to queue scanned flag:", updateError);
         }
 
         // ── Step 6: Show success popup ──

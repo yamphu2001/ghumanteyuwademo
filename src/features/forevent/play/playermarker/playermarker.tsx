@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -6,6 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useMapTrail } from "./useMapTrail";
 import { usePlayerMovement } from "./usePlayerMovement";
+import { useOfflineQueue } from "@/features/forevent/play/useOfflineQueue";
 
 interface PlayerMarkerProps {
   map: maplibregl.Map | null;
@@ -17,14 +17,15 @@ export default function PlayerMarker({ map, eventId, iconUrl = "/Mascot.png" }: 
   const [shape, setShape] = useState<"circle" | "square">("circle");
   const markerRef = useRef<maplibregl.Marker | null>(null);
 
-  // 1. Initialize Trail Management Hook
+  // Offline-aware write queue — all Firebase writes go through here
+  const { enqueue } = useOfflineQueue(eventId);
+
+  // 1. Trail hook
   const { addTrailPoint } = useMapTrail(map, eventId, shape);
 
-  // Helper function to safely create or move the marker element
   const updateMarkerPosition = (latitude: number, longitude: number) => {
     if (!map) return;
 
-    // If the marker doesn't exist on the map yet, build and attach it now
     if (!markerRef.current) {
       const el = document.createElement("div");
       Object.assign(el.style, {
@@ -46,48 +47,43 @@ export default function PlayerMarker({ map, eventId, iconUrl = "/Mascot.png" }: 
         .setLngLat([longitude, latitude])
         .addTo(map);
     } else {
-      // Otherwise, smoothly slide it to the new coordinate updates
       markerRef.current.setLngLat([longitude, latitude]);
     }
   };
 
-  // 2. FIX: Check local cache instantly on load/refresh so it spawns with zero delay
+  // 2. Restore last known position from cache on load
   useEffect(() => {
     if (!map || !eventId) return;
-
     const savedTrail = localStorage.getItem(`player_trail_${eventId}`);
     if (savedTrail) {
       try {
         const parsed = JSON.parse(savedTrail);
-        if (parsed && parsed.length > 0) {
-          const lastPoint = parsed[parsed.length - 1];
-          const [lng, lat] = lastPoint.coordinates;
+        if (parsed?.length > 0) {
+          const [lng, lat] = parsed[parsed.length - 1].coordinates;
           updateMarkerPosition(lat, lng);
         }
       } catch (error) {
-        console.error("Failed to restore initial marker positioning:", error);
+        console.error("Failed to restore initial marker position:", error);
       }
     }
   }, [map, eventId]);
 
-  // 3. Initialize Movement Engine Hook
+  // 3. Movement hook — enqueue is passed so writes are queued when offline
   usePlayerMovement({
     map,
     eventId,
+    enqueue,
     onPositionUpdate: (latitude, longitude) => {
-      // Fires when GPS acquires satellite coordinates or WASD moves
       updateMarkerPosition(latitude, longitude);
       addTrailPoint(latitude, longitude);
     },
   });
 
-  // 4. Handle clean unmounting house-cleaning routines
+  // 4. Cleanup
   useEffect(() => {
     return () => {
-      if (markerRef.current) {
-        markerRef.current.remove();
-        markerRef.current = null;
-      }
+      markerRef.current?.remove();
+      markerRef.current = null;
     };
   }, []);
 

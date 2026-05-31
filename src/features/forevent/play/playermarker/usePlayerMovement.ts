@@ -1,16 +1,20 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
-import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { syncPlayerLocationToDB } from "./locationService";
+import { onAuthStateChanged } from "firebase/auth";
+import { type QueuedOperation } from "@/features/forevent/play/useOfflineQueue";
 
 interface MovementHookProps {
   map: maplibregl.Map | null;
   eventId: string;
   onPositionUpdate: (latitude: number, longitude: number) => void;
+  /** Pass enqueue from useOfflineQueue so location writes are queued when offline */
+  enqueue: (op: QueuedOperation) => Promise<void>;
 }
 
-export function usePlayerMovement({ map, eventId, onPositionUpdate }: MovementHookProps) {
+export function usePlayerMovement({ map, eventId, onPositionUpdate, enqueue }: MovementHookProps) {
   const currentCoordsRef = useRef<{ latitude: number; longitude: number } | null>(null);
   const isMockingRef = useRef<boolean>(false);
   const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
@@ -18,28 +22,36 @@ export function usePlayerMovement({ map, eventId, onPositionUpdate }: MovementHo
   useEffect(() => {
     if (!map || !eventId) return;
 
-    const processCoordsUpdate = (latitude: number, longitude: number) => {
+    const syncLocation = (latitude: number, longitude: number) => {
       onPositionUpdate(latitude, longitude);
 
       const uid = auth.currentUser?.uid;
-      if (uid) {
-        syncPlayerLocationToDB({ eventId, uid, latitude, longitude });
-      }
+      if (!uid) return;
+
+      // All location writes go through enqueue — works online and offline
+      enqueue({
+        type: 'rtdbSet',
+        path: `eventsProgress/${eventId}/${uid}/location`,
+        data: {
+          latitude,
+          longitude,
+          updatedAt: Date.now(),
+        },
+      });
     };
 
     const runLocationCheck = () => {
-      const uid = auth.currentUser?.uid;
-      if (!uid) return;
+      if (!auth.currentUser?.uid) return;
 
       if (isMockingRef.current && currentCoordsRef.current) {
-        processCoordsUpdate(currentCoordsRef.current.latitude, currentCoordsRef.current.longitude);
+        syncLocation(currentCoordsRef.current.latitude, currentCoordsRef.current.longitude);
       } else {
         if (!navigator.geolocation) return;
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             const { latitude, longitude } = pos.coords;
             currentCoordsRef.current = { latitude, longitude };
-            processCoordsUpdate(latitude, longitude);
+            syncLocation(latitude, longitude);
           },
           () => {},
           { enableHighAccuracy: true, timeout: 4500, maximumAge: 0 }
@@ -47,22 +59,21 @@ export function usePlayerMovement({ map, eventId, onPositionUpdate }: MovementHo
       }
     };
 
-    // Keyboard controls handler
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!currentCoordsRef.current) return;
       const step = 0.000004;
       let moved = false;
 
       switch (e.key.toLowerCase()) {
-        case "w": currentCoordsRef.current.latitude += step; moved = true; break;
-        case "s": currentCoordsRef.current.latitude -= step; moved = true; break;
+        case "w": currentCoordsRef.current.latitude  += step; moved = true; break;
+        case "s": currentCoordsRef.current.latitude  -= step; moved = true; break;
         case "a": currentCoordsRef.current.longitude -= step; moved = true; break;
         case "d": currentCoordsRef.current.longitude += step; moved = true; break;
       }
 
       if (moved) {
         isMockingRef.current = true;
-        processCoordsUpdate(currentCoordsRef.current.latitude, currentCoordsRef.current.longitude);
+        syncLocation(currentCoordsRef.current.latitude, currentCoordsRef.current.longitude);
       }
     };
 
@@ -79,5 +90,5 @@ export function usePlayerMovement({ map, eventId, onPositionUpdate }: MovementHo
       window.removeEventListener("keydown", handleKeyDown);
       unsubscribeAuth();
     };
-  }, [map, eventId, onPositionUpdate]);
+  }, [map, eventId, onPositionUpdate, enqueue]);
 }
