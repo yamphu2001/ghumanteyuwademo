@@ -91,22 +91,7 @@ async function persistToQueue(op: QueuedOperation, eventId: string): Promise<voi
   await saveQueue(queue);
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
 
-/**
- * useOfflineQueue
- *
- * Returns `enqueue` — use it instead of direct Firestore/RTDB calls.
- *   • Online  → writes immediately to Firebase.
- *   • Offline → persists to IndexedDB; flushes automatically on reconnect.
- *
- * Usage:
- *   const { enqueue } = useOfflineQueue(eventId);
- *
- *   enqueue({ type: 'set',    path: `events/${eventId}/players/${uid}`, data: { lat, lng } });
- *   enqueue({ type: 'add',    collectionPath: `events/${eventId}/actions`, data: { score } });
- *   enqueue({ type: 'rtdbSet', path: `eventsProgress/${eventId}/${uid}/location`, data: { lat, lng } });
- */
 export function useOfflineQueue(eventId: string) {
   const flushing = useRef(false);
 

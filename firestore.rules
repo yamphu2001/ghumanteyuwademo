@@ -1,0 +1,98 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── users ────────────────────────────────────────────────────────────────
+    // Any signed-in user can READ any user doc.
+    // The leaderboard calls getDoc(users/{otherUid}) to fetch other players' usernames,
+    // so read must be open to all authenticated users.
+    // Write is still locked to the owner only.
+    match /users/{uid} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ─── events ───────────────────────────────────────────────────────────────
+    match /events/{eventId} {
+      // Any signed-in user can read the event document (lobby, eventsmaker list).
+      allow read: if request.auth != null;
+      // Any signed-in user can write (admin panel has no server-side role guard).
+      allow write: if request.auth != null;
+
+      // ── boundary ────────────────────────────────────────────────────────────
+      match /boundary/{docId} {
+        allow read:  if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // ── qrcodemarkers ───────────────────────────────────────────────────────
+      // Players read for map + scanner; scanner writes scanned:true via offline queue.
+      match /qrcodemarkers/{markerId} {
+        allow read:  if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // ── ghumantestall ────────────────────────────────────────────────────────
+      match /ghumantestall/{stallId} {
+        allow read:  if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // ── serviceboundaries ────────────────────────────────────────────────────
+      match /serviceboundaries/{serviceId} {
+        allow read:  if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // ── roulette ─────────────────────────────────────────────────────────────
+      // Player reads prize list; admin writes prizes.
+      match /roulette/{prizeId} {
+        allow read:  if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // ── quizzes ──────────────────────────────────────────────────────────────
+      // Player reads questions; admin writes questions.
+      match /quizzes/{questionId} {
+        allow read:  if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // ── configs ──────────────────────────────────────────────────────────────
+      // quiz/page.tsx reads configs/quiz for timer + displayCount.
+      match /configs/{configId} {
+        allow read:  if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // ── progressbar ──────────────────────────────────────────────────────────
+      // progressbar/page.tsx reads progressbar/config for enabled + activeCategories.
+      match /progressbar/{docId} {
+        allow read:  if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // ── player_log ───────────────────────────────────────────────────────────
+      // Leaderboard reads ALL player docs → any signed-in user can read.
+      // Players can only write their own log (startat, qrPoints, quizPoints, etc.).
+      // finish/page.tsx also writes totalTime + rank to the owner's doc → owner write covers it.
+      match /player_log/{uid} {
+        allow read:  if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // ─── event_sessions ───────────────────────────────────────────────────────
+    // eventsmaker/[eventId]/page.tsx queries this to check if a session is started.
+    match /event_sessions/{sessionId} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // ─── Deny everything else ─────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

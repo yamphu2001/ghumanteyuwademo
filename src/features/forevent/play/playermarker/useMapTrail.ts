@@ -186,12 +186,18 @@ export function useMapTrail(
     if (lastPoint) {
       const [lastLng, lastLat] = lastPoint.coordinates;
       const distanceMoved = getDistanceInMeters(lastLat, lastLng, latitude, longitude);
-      
-      if (distanceMoved < 3) {
-        return; 
+
+      // 8m threshold — GPS chips have natural jitter of 2–5m even when stationary.
+      // 3m was too small and let jitter noise through, causing phantom trail dots
+      // and map pans while the player wasn't actually moving.
+      if (distanceMoved < 8) {
+        return;
       }
     }
 
+    // panTo lives here only for trail points (real movement ≥ 8m).
+    // The marker itself is updated every GPS tick in PlayerMarker.updateMarkerPosition,
+    // so the icon always tracks the player smoothly without waiting for a trail dot.
     map.panTo([longitude, latitude], { duration: 300 });
 
     points.push({
@@ -216,3 +222,6 @@ export function useMapTrail(
 
   return { addTrailPoint };
 }
+
+
+

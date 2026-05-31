@@ -1,62 +1,8 @@
-// 'use client';
-
-// import { useState } from 'react';
-// import localforage from 'localforage';
-
-// export default function OfflineSync({ eventId }: { eventId: string }) {
-//   const [status, setStatus] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle');
-
-//   const downloadAssetsForOffline = async () => {
-//     setStatus('syncing');
-//     try {
-//       // 1. Open the browser's Cache Storage
-//       const cache = await caches.open('offline-map-assets');
-      
-//       // 2. Add structural layout assets to cache
-//       await cache.addAll([
-//         '/map-style.json',
-//         // Add paths to your local fonts and sprites here if you have them
-//       ]);
-
-//       // 3. Define the critical tile coordinates for your event boundary
-//       // Note: Replace these example strings with an array of actual file paths matching your local public/tiles folder
-//       const tilesToCache = [
-//         '/tiles/14/1234/5678.pbf',
-//         '/tiles/14/1234/5679.pbf',
-//       ];
-//       await cache.addAll(tilesToCache);
-
-//       setStatus('done');
-//     } catch (err) {
-//       console.error('Offline download failed:', err);
-//       setStatus('error');
-//     }
-//   };
-
-//   return (
-//     <div className="p-4 bg-slate-900 text-white rounded-lg shadow-md my-2">
-//       <h4>Offline Map Access</h4>
-//       {status === 'idle' && (
-//         <button 
-//           onClick={downloadAssetsForOffline}
-//           className="mt-2 bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded text-sm font-medium"
-//         >
-//           Prepare Offline Mode
-//         </button>
-//       )}
-//       {status === 'syncing' && <p className="text-sm text-yellow-400 mt-2">Downloading map elements...</p>}
-//       {status === 'done' && <p className="text-sm text-green-400 mt-2">✓ Game map is ready to play offline!</p>}
-//       {status === 'error' && <p className="text-sm text-red-400 mt-2">⚠️ Failed downloading offline data.</p>}
-//     </div>
-//   );
-// }
-
-
 
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import localforage from 'localforage';
 
@@ -93,9 +39,27 @@ export default function OfflineSync({ eventId, tilePaths = [] }: OfflineSyncProp
           await localforage.setItem(`boundary_${eventId}`, boundary);
         }
       }
-      setProgress(25);
+      setProgress(15);
 
-      // ── Step 2: Map style + sprites/fonts ─────────────────────────────────
+      // ── Step 2: Offline event markers and service data ──────────────────────
+      const [serviceSnap, qrSnap, stallSnap] = await Promise.all([
+        getDocs(collection(db, 'events', eventId, 'serviceboundaries')),
+        getDocs(collection(db, 'events', eventId, 'qrcodemarkers')),
+        getDocs(collection(db, 'events', eventId, 'ghumantestall')),
+      ]);
+
+      const serviceItems = serviceSnap.docs.map((doc) => ({ id: doc.id, ...JSON.parse(JSON.stringify(doc.data())) }));
+      const qrItems = qrSnap.docs.map((doc) => ({ id: doc.id, ...JSON.parse(JSON.stringify(doc.data())) }));
+      const stallItems = stallSnap.docs.map((doc) => ({ id: doc.id, ...JSON.parse(JSON.stringify(doc.data())) }));
+
+      await Promise.all([
+        localforage.setItem(`serviceboundaries_${eventId}`, serviceItems),
+        localforage.setItem(`qrcodemarkers_${eventId}`, qrItems),
+        localforage.setItem(`ghumantestall_${eventId}`, stallItems),
+      ]);
+      setProgress(35);
+
+      // ── Step 3: Map style + sprites/fonts ─────────────────────────────────
       const cache = await caches.open('offline-map-assets');
 
       const coreAssets = [
@@ -134,6 +98,11 @@ export default function OfflineSync({ eventId, tilePaths = [] }: OfflineSyncProp
 
   const clear = async () => {
     await localforage.removeItem(`boundary_${eventId}`);
+    await Promise.all([
+      localforage.removeItem(`serviceboundaries_${eventId}`),
+      localforage.removeItem(`qrcodemarkers_${eventId}`),
+      localforage.removeItem(`ghumantestall_${eventId}`),
+    ]);
     try {
       await caches.delete('offline-map-assets');
     } catch {/* cache API not available */}
@@ -156,7 +125,9 @@ export default function OfflineSync({ eventId, tilePaths = [] }: OfflineSyncProp
           </p>
           <button
             onClick={download}
-            className="bg-zinc-900 hover:bg-zinc-800 text-white px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-colors"
+            // className="bg-white-600 hover:bg-red-600 border-2 border-black text-white px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-colors"
+            // 🟢 FIXED TAILWIND STYLING:
+className="bg-[#E13746] hover:bg-[#c92f3d] border-2 border-[#E13746] text-white px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-colors"
           >
             Download
           </button>

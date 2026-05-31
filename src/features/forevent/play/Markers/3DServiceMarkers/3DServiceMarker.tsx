@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import { db } from "@/lib/firebase";
+import localforage from "localforage";
 import { collection, onSnapshot } from "firebase/firestore";
 
 // --- INTERFACES ---
@@ -359,6 +360,16 @@ export default function ServiceMarkers({ map, eventId }: { map: any; eventId: st
   useEffect(() => {
     if (!eventId) return;
 
+    const cacheKey = `serviceboundaries_${eventId}`;
+    const loadCached = async () => {
+      if (navigator.onLine) return;
+      const cached = await localforage.getItem<ServiceConfig[]>(cacheKey);
+      if (cached) {
+        setServices(cached);
+      }
+    };
+    loadCached();
+
     // ✅ Listen to subcollection instead of parent doc field
     const subColRef = collection(db, "events", eventId, "serviceboundaries");
 
@@ -366,13 +377,17 @@ export default function ServiceMarkers({ map, eventId }: { map: any; eventId: st
       const list: ServiceConfig[] = [];
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        // Only include active services
         if (data.status === "active") {
           list.push({ id: docSnap.id, ...data } as ServiceConfig);
         }
       });
       setServices(list);
+      localforage.setItem(cacheKey, list).catch(() => {});
     }, (err) => {
+      if (err?.code === "unavailable" || err?.message?.includes("Could not reach Cloud Firestore backend")) {
+        console.warn("ServiceMarkers offline snapshot warning:", err);
+        return;
+      }
       console.error("ServiceMarkers snapshot error:", err);
     });
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -22,6 +23,23 @@ export function usePlayerMovement({ map, eventId, onPositionUpdate, enqueue }: M
   useEffect(() => {
     if (!map || !eventId) return;
 
+    // Restore last known position from localStorage so keyboard mocking works
+    try {
+      const saved = localStorage.getItem(`player_trail_${eventId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const last = parsed[parsed.length - 1];
+          if (last && Array.isArray(last.coordinates)) {
+            const [lng, lat] = last.coordinates;
+            currentCoordsRef.current = { latitude: lat, longitude: lng };
+          }
+        }
+      }
+    } catch (err) {
+      // ignore parse errors
+    }
+
     const syncLocation = (latitude: number, longitude: number) => {
       onPositionUpdate(latitude, longitude);
 
@@ -35,7 +53,8 @@ export function usePlayerMovement({ map, eventId, onPositionUpdate, enqueue }: M
         data: {
           latitude,
           longitude,
-          updatedAt: Date.now(),
+          // Changed from Date.now() to a human-readable local date and time string
+          updatedAt: new Date().toLocaleString(), 
         },
       });
     };

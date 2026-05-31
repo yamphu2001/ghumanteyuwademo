@@ -127,6 +127,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { db } from "@/lib/firebase";
+import localforage from "localforage";
 import { collection, onSnapshot } from "firebase/firestore";
 import ghumanteStallImg from "./ghumantestall.png";
 
@@ -212,6 +213,14 @@ export default function GhumanteStall({ map, eventId }: { map: any; eventId: str
   useEffect(() => {
     if (!eventId) return;
 
+    const cacheKey = `ghumantestall_${eventId}`;
+    const loadCached = async () => {
+      if (navigator.onLine) return;
+      const cached = await localforage.getItem<GhumanteStallConfig[]>(cacheKey);
+      if (cached) setGhumanteStalls(cached);
+    };
+    loadCached();
+
     const subCollectionRef = collection(db, "events", eventId, "ghumantestall");
 
     const unsub = onSnapshot(subCollectionRef, (snapshot) => {
@@ -232,7 +241,12 @@ export default function GhumanteStall({ map, eventId }: { map: any; eventId: str
       });
 
       setGhumanteStalls(activeStalls);
+      localforage.setItem(cacheKey, activeStalls).catch(() => {});
     }, (error) => {
+      if (error?.code === "unavailable" || error?.message?.includes("Could not reach Cloud Firestore backend")) {
+        console.warn("GhumanteStall offline snapshot warning:", error);
+        return;
+      }
       console.error("Error listening to ghumantestall subcollection: ", error);
     });
 

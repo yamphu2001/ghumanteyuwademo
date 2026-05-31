@@ -1,123 +1,81 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { useParams, useRouter } from "next/navigation";
-// import { onAuthStateChanged, User } from "firebase/auth";
-// import { auth } from "@/lib/firebase"; 
-// import MapContainer from "@/features/forevent/play/MapContainer/MapContainer";
-
-// export default function PlayPage() {
-//   const params = useParams();
-//   const router = useRouter();
-  
-//   // Safely extract eventId
-//   const eventId = typeof params?.eventId === 'string' ? params.eventId : undefined;
-  
-//   const [loading, setLoading] = useState(true);
-//   const [user, setUser] = useState<User | null>(null);
-
-//   useEffect(() => {
-//     // 1. Listen for Auth State
-//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-//       if (currentUser) {
-//         setUser(currentUser);
-//       } else {
-//         router.push("/"); 
-//       }
-//       setLoading(false);
-//     });
-
-//     return () => unsubscribe();
-//   }, [router]);
-
-//   // 2. Loading State (Kept your design, it looks great for a game/app context)
-//   if (loading) {
-//     return (
-//       <div className="flex items-center justify-center w-screen h-screen bg-white">
-//         <div className="flex flex-col items-center gap-4">
-//           <div className="w-12 h-12 border-4 border-[#dc2626] border-t-transparent rounded-full animate-spin" />
-//           <p className="text-black text-xs font-bold tracking-[0.2em] uppercase">
-//             Verifying Identity...
-//           </p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   // 3. Final Guard: Redirect if no eventId exists in URL
-//   if (!user || !eventId) {
-//     router.replace("/eventsmaker");
-//     return null;
-//   }
-
-//   return (
-//     <main className="relative w-screen h-screen overflow-hidden bg-white text-black">
-//       {/* Game Components */}
-//       <MapContainer eventId={eventId} />
-//     </main>
-//   );
-// }
-
-
-
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { auth, db } from "@/lib/firebase"; 
-import { doc, setDoc, getDoc } from "firebase/firestore"; // Added getDoc to check existence
+import { auth } from "@/lib/firebase";
+import { flushQueue } from "@/features/forevent/play/useOfflineQueue";
 import MapContainer from "@/features/forevent/play/MapContainer/MapContainer";
+
+// localStorage key that marks the start time as already recorded for this player+event.
+// Using localStorage as the guard means it works 100% offline — no Firestore read needed.
+const startAtKey = (eventId: string, uid: string) => `startat_recorded_${eventId}_${uid}`;
 
 export default function PlayPage() {
   const params = useParams();
   const router = useRouter();
-  
-  // Safely extract eventId
+
   const eventId = typeof params?.eventId === 'string' ? params.eventId : undefined;
-  
+
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
-  
-  // Guard reference to prevent duplicate execution during React StrictMode double-renders
+
+  // Guard against React StrictMode double-invoke
   const hasLoggedLanding = useRef(false);
 
   useEffect(() => {
-    // 1. Listen for Auth State
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
 
-        // ─── LOG LANDING ACTIVITY ONLY IF IT DOES NOT EXIST ───
         if (eventId && !hasLoggedLanding.current) {
-          hasLoggedLanding.current = true; // Mark local ref as executed immediately
-          
-          try {
-            // Reference to the player's log document
-            const logDocRef = doc(db, "events", eventId, "player_log", currentUser.uid);
-            
-            // Check if the player already has an established record
-            const logDocSnap = await getDoc(logDocRef);
+          hasLoggedLanding.current = true;
 
-            if (!logDocSnap.exists()) {
-              // Get current local time in human-readable format
-              const humanReadableTime = new Date().toLocaleString();
+          const key = startAtKey(eventId, currentUser.uid);
+          const alreadyRecorded = localStorage.getItem(key);
 
-              // Write the timestamp only for the first time entry
-              await setDoc(logDocRef, {
-                startat: humanReadableTime, 
-              }, { merge: true }); // merge protects this field during future additions
-              
-              console.log("First landing recorded. Timestamp locked.");
-            } else {
-              console.log("Player document already exists. Reload detected; start time unchanged.");
+          if (!alreadyRecorded) {
+            const humanReadableTime = new Date().toLocaleString();
+
+            // Mark locally first — this is instant and works offline.
+            // Even if the app is killed before the Firestore write completes,
+            // the timestamp is preserved here and won't be overwritten on reload.
+            localStorage.setItem(key, humanReadableTime);
+
+            try {
+              if (navigator.onLine) {
+                // Online: write directly to Firestore
+                const { doc, setDoc } = await import("firebase/firestore");
+                const { db } = await import("@/lib/firebase");
+                const logDocRef = doc(db, "events", eventId, "player_log", currentUser.uid);
+                await setDoc(logDocRef, { startat: humanReadableTime }, { merge: true });
+                console.log("[PlayPage] Landing recorded online:", humanReadableTime);
+              } else {
+                // Offline: push into the offline queue — will flush when reconnected
+                const { persistStartAt } = await import("./_persistStartAt");
+                await persistStartAt(eventId, currentUser.uid, humanReadableTime);
+                console.log("[PlayPage] Landing queued for offline sync:", humanReadableTime);
+              }
+            } catch (err) {
+              // Write failed — the localStorage key is already set so the time is safe.
+              // The offline queue will retry on next reconnect.
+              console.warn("[PlayPage] startat write failed, will retry on reconnect:", err);
+              try {
+                const { persistStartAt } = await import("./_persistStartAt");
+                await persistStartAt(eventId, currentUser.uid, humanReadableTime);
+              } catch (_) { /* queue also failed — non-fatal, localStorage still has it */ }
             }
-          } catch (err) {
-            console.error("Failed to verify/store landing log in Firestore:", err);
+          } else {
+            console.log("[PlayPage] startat already recorded, skipping.");
+          }
+
+          // Flush any previously queued operations now that we have auth
+          if (navigator.onLine) {
+            flushQueue().catch(() => {});
           }
         }
       } else {
-        router.push("/"); 
+        router.push("/");
       }
       setLoading(false);
     });
@@ -125,7 +83,6 @@ export default function PlayPage() {
     return () => unsubscribe();
   }, [router, eventId]);
 
-  // 2. Loading State
   if (loading) {
     return (
       <div className="flex items-center justify-center w-screen h-screen bg-white">
@@ -139,7 +96,6 @@ export default function PlayPage() {
     );
   }
 
-  // 3. Final Guard: Redirect if no eventId exists in URL
   if (!user || !eventId) {
     router.replace("/eventsmaker");
     return null;
@@ -147,8 +103,7 @@ export default function PlayPage() {
 
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-white text-black">
-      {/* Game Components */}
-      <MapContainer eventId={eventId} />
+      <MapContainer eventId={eventId} userId={user.uid} />
     </main>
   );
 }

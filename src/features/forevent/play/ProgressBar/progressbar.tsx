@@ -1,10 +1,12 @@
+
 // "use client";
 
 // import React, { useEffect, useState } from "react";
 // import { collection, onSnapshot, doc } from "firebase/firestore";
-// import { ref, onValue, off, DataSnapshot } from "firebase/database";
+// import { ref, onValue, off, DataSnapshot, set } from "firebase/database"; // 📥 Added 'set'
 // import { getAuth, onAuthStateChanged } from "firebase/auth";
 // import { db, rtdb } from "@/lib/firebase";
+// import localforage from "localforage";
 // import styles from "./ProgressBar.module.css";
 // import { useParams } from "next/navigation";
 
@@ -28,11 +30,11 @@
 //     return () => unsub();
 //   }, []);
 
-//  // 2. Read Remote Configuration Panel Config directly under the event root
+//   // 2. Read Remote Configuration Panel Config directly under the event root
 //   useEffect(() => {
 //     if (!eventId) return;
 //     const unsubscribe = onSnapshot(
-//       doc(db, "events", eventId, "progressbar", "config"), // 🟢 Points directly to the clean collection layout
+//       doc(db, "events", eventId, "progressbar", "config"),
 //       (snapshot) => {
 //         if (snapshot.exists()) {
 //           const data = snapshot.data();
@@ -49,13 +51,31 @@
 //   useEffect(() => {
 //     if (!eventId) return;
 //     setIsLoading(true);
+//     const cacheKey = `qrcodemarkers_${eventId}`;
+
+//     const loadCached = async () => {
+//       if (navigator.onLine) return;
+//       const cached = await localforage.getItem<any[]>(cacheKey);
+//       if (cached) {
+//         setTotalQR(cached.length);
+//         setIsLoading(false);
+//       }
+//     };
+//     loadCached();
+
 //     const unsub = onSnapshot(
 //       collection(db, "events", eventId, "qrcodemarkers"),
 //       (snap) => {
 //         setTotalQR(snap.docs.length);
 //         setIsLoading(false);
+//         localforage.setItem(cacheKey, snap.docs.map((doc) => doc.data())).catch(() => {});
 //       },
 //       (err) => {
+//         if (err?.code === "unavailable" || err?.message?.includes("Could not reach Cloud Firestore backend")) {
+//           console.warn("[ProgressBar] qrcodemarkers offline snapshot warning:", err);
+//           setIsLoading(false);
+//           return;
+//         }
 //         console.error("[ProgressBar] qrcodemarkers error:", err);
 //         setIsLoading(false);
 //       }
@@ -87,6 +107,18 @@
 
 //   const pct = totalQR === 0 ? 0 : Math.min(100, Math.round((scannedQR / totalQR) * 100));
 //   const allDone = totalQR > 0 && scannedQR >= totalQR;
+
+//   // 5. Sync live progress percentage to RTDB for Quiz Access verification
+// useEffect(() => {
+//   if (isLoading || !userId || !eventId) return;
+
+//   // 📁 Removed /userInfo/ to store directly under the user ID
+//   const progressRef = ref(rtdb, `eventsProgress/${eventId}/${userId}/progress`);
+  
+//   set(progressRef, `${pct}%`).catch((err) => {
+//     console.error("[ProgressBar] Failed syncing progress percentage to RTDB:", err);
+//   });
+// }, [pct, userId, eventId, isLoading]);
 
 //   if (!enabled) return null;
 
@@ -227,13 +259,15 @@
 
 
 
+
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { collection, onSnapshot, doc } from "firebase/firestore";
-import { ref, onValue, off, DataSnapshot, set } from "firebase/database"; // 📥 Added 'set'
+import { ref, onValue, off, DataSnapshot, set } from "firebase/database"; 
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db, rtdb } from "@/lib/firebase";
+import localforage from "localforage";
 import styles from "./ProgressBar.module.css";
 import { useParams } from "next/navigation";
 
@@ -274,17 +308,34 @@ export default function ProgressBar() {
   }, [eventId]);
   
 
-  // 3. Total QR markers from Firestore
+  // 3. Total QR markers from Firestore (Enhanced for reliable instant cache matching)
   useEffect(() => {
     if (!eventId) return;
     setIsLoading(true);
+    const cacheKey = `qrcodemarkers_${eventId}`;
+
+    const loadCached = async () => {
+      const cached = await localforage.getItem<any[]>(cacheKey);
+      if (cached) {
+        setTotalQR(cached.length);
+        setIsLoading(false);
+      }
+    };
+    loadCached();
+
     const unsub = onSnapshot(
       collection(db, "events", eventId, "qrcodemarkers"),
       (snap) => {
         setTotalQR(snap.docs.length);
         setIsLoading(false);
+        localforage.setItem(cacheKey, snap.docs.map((doc) => doc.data())).catch(() => {});
       },
       (err) => {
+        if (err?.code === "unavailable" || err?.message?.includes("Could not reach Cloud Firestore backend")) {
+          console.warn("[ProgressBar] qrcodemarkers offline snapshot warning:", err);
+          setIsLoading(false);
+          return;
+        }
         console.error("[ProgressBar] qrcodemarkers error:", err);
         setIsLoading(false);
       }
@@ -292,17 +343,45 @@ export default function ProgressBar() {
     return () => unsub();
   }, [eventId]);
 
-  // 4. Scanned QR count from RTDB
+  // 4. Scanned QR count from RTDB with Local Storage Bridge Fallback
   useEffect(() => {
     if (!userId || !eventId) return;
+    
+    const localScanRecordKey = `scanned_history_${eventId}_${userId}`;
     const scannedRef = ref(rtdb, `eventsProgress/${eventId}/${userId}/scannedQRCodes`);
+    
+    // Track unique keys locally to merge remote and offline databases safely
+    let remoteIds: string[] = [];
+
+    const syncScannedCount = async (incomingRemoteIds: string[]) => {
+      remoteIds = incomingRemoteIds;
+      try {
+        const localHistory = await localforage.getItem<string[]>(localScanRecordKey) || [];
+        // Combine remote IDs and local history IDs to calculate complete progress unique total
+        const combinedUniqueIds = new Set([...remoteIds, ...localHistory]);
+        
+        setScannedQR(combinedUniqueIds.size);
+        setAnimate(true);
+      } catch (err) {
+        setScannedQR(remoteIds.length);
+      }
+    };
+
+    // Listen to RTDB
     const handler = (snapshot: DataSnapshot) => {
       const data = snapshot.val();
-      setScannedQR(data && typeof data === "object" ? Object.keys(data).length : 0);
-      setAnimate(true);
+      const extractedIds = data && typeof data === "object" ? Object.keys(data) : [];
+      syncScannedCount(extractedIds);
     };
     onValue(scannedRef, handler);
-    return () => off(scannedRef, "value", handler);
+
+    // Poll local history changes for instant offline progression response
+    const interval = setInterval(() => syncScannedCount(remoteIds), 1500);
+
+    return () => {
+      off(scannedRef, "value", handler);
+      clearInterval(interval);
+    };
   }, [userId, eventId]);
 
   // Animate reset
@@ -318,16 +397,17 @@ export default function ProgressBar() {
   const allDone = totalQR > 0 && scannedQR >= totalQR;
 
   // 5. Sync live progress percentage to RTDB for Quiz Access verification
-useEffect(() => {
-  if (isLoading || !userId || !eventId) return;
+  useEffect(() => {
+    if (isLoading || !userId || !eventId) return;
 
-  // 📁 Removed /userInfo/ to store directly under the user ID
-  const progressRef = ref(rtdb, `eventsProgress/${eventId}/${userId}/progress`);
-  
-  set(progressRef, `${pct}%`).catch((err) => {
-    console.error("[ProgressBar] Failed syncing progress percentage to RTDB:", err);
-  });
-}, [pct, userId, eventId, isLoading]);
+    const progressRef = ref(rtdb, `eventsProgress/${eventId}/${userId}/progress`);
+    
+    set(progressRef, `${pct}%`).catch((err) => {
+      // Slences offline sync logs since RTDB automatically chains pending requests until connectivity returns
+      if (!navigator.onLine) return;
+      console.error("[ProgressBar] Failed syncing progress percentage to RTDB:", err);
+    });
+  }, [pct, userId, eventId, isLoading]);
 
   if (!enabled) return null;
 
