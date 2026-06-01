@@ -18,7 +18,10 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development", // Don't run caching in development mode
   register: true,                                  // Automatically register the offline service worker
   workboxOptions: {
-    skipWaiting: true,                             // Correctly placed inside workboxOptions to avoid type errors
+    skipWaiting: true,                             // New SW activates immediately without waiting for old one to die
+    clientsClaim: true,                            // New SW takes control of all open tabs immediately
+    // Increase the max asset size limit — Next.js chunks can be large
+    maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
   },
 });
 
