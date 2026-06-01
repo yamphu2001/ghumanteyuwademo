@@ -1,7 +1,10 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { EventIdProvider, useEventId } from "@/app/eventadmin/Eventidcontext";
 
 import EventsAdmin from "@/app/eventadmin/events/page";
@@ -129,6 +132,32 @@ function AdminShell() {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthed(true);
+      } else {
+        router.replace("/login");
+      }
+      setAuthChecked(true);
+    });
+    return () => unsub();
+  }, [router]);
+
+  if (!authChecked) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <p className="text-gray-500 font-semibold">Checking authentication...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthed) return null;
+
   return (
     <EventIdProvider>
       <AdminShell />

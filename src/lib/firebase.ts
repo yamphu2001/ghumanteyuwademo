@@ -112,13 +112,19 @@ if (typeof window !== "undefined") {
 export const auth = getAuth(app);
 
 /**
- * 🟢 FIX 1: Safe Multi-Instance Guard for Next.js
- * If Firestore was already spun up by a hot-reload session, reuse it 
- * instead of trying to overwrite settings, which crashes the server window.
+ * Safe Firestore initialization guard for Next.js hot-reload.
+ * getFirestore() returns the existing instance if already initialized,
+ * so we try initializeFirestore first and fall back on error.
  */
-export const db = !getApps().length 
-  ? initializeFirestore(app, { localCache: persistentLocalCache() })
-  : getFirestore(app);
+import type { Firestore } from "firebase/firestore";
+let db: Firestore;
+try {
+  db = initializeFirestore(app, { localCache: persistentLocalCache() });
+} catch {
+  // Already initialized (hot-reload) — reuse the existing instance
+  db = getFirestore(app);
+}
+export { db };
 
 export const rtdb = getDatabase(app);
 
