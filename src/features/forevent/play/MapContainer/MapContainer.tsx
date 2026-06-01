@@ -179,7 +179,7 @@ import QRcodeMarkers from "../Markers/QRcodeMarkers/QRcodeMarkers";
 import GhumanteStall from "../Markers/GhumanteYuwaStall/ghumantestall";
 import ServiceMarkers from "../Markers/3DServiceMarkers/3DServiceMarker";
 import ProgressBar from "../ProgressBar/progressbar";
-import RoulettePage from '@/app/eventsmaker/[eventId]/roulette/page';
+import RoulettePage from '@/app/eventsmaker/[eventId]/roulette/RoulettePage';
 
 interface MapContainerProps {
   eventId: string;

@@ -7,7 +7,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { EventIdProvider, useEventId } from "@/app/eventadmin/Eventidcontext";
 
-import EventsAdmin from "@/app/eventadmin/events/page";
+import EventsAdmin from "@/app/eventadmin/events/EventsAdmin";
 import EventAreaAdmin from "@/app/eventadmin/eventarea/page";
 import AdminQRMarkersPage from "@/app/eventadmin/qrcodemarkers/page";
 import GhumanteStallAdmin from "@/app/eventadmin/ghumantestall/page";
