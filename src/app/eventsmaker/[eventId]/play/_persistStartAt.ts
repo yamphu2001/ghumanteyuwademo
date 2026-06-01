@@ -2,8 +2,15 @@
  * Pushes a startat write into the offline queue.
  * Kept in a separate file so page.tsx can import it dynamically
  * (avoids bundling localforage into the initial page chunk).
+ *
+ * Rules:
+ * - If startat already exists in Firestore → skip (even if player re-logs in).
+ * - If startat was deleted from Firestore → allow the write.
+ * - If already queued locally (offline, not yet flushed) → skip.
  */
 import localforage from "localforage";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 interface QueueEntry {
   id: string;
@@ -24,9 +31,22 @@ export async function persistStartAt(
   uid: string,
   humanReadableTime: string
 ): Promise<void> {
-  const queue: QueueEntry[] = (await localforage.getItem<QueueEntry[]>(QUEUE_KEY)) ?? [];
+  // 1. Check Firestore first — if startat already exists there, never overwrite it.
+  try {
+    const snap = await getDoc(doc(db, "events", eventId, "player_log", uid));
+    if (snap.exists() && snap.data()?.startat) {
+      // startat is already persisted in Firestore — do nothing.
+      return;
+    }
+  } catch {
+    // Offline or fetch failed — fall through to the queue check below.
+    // The queue dedup will prevent double-writes when connectivity returns.
+  }
 
-  // Avoid duplicate entries — if a startat op for this player+event is already queued, skip
+  // 2. Check the local offline queue — avoid stacking duplicate pending writes.
+  const queue: QueueEntry[] =
+    (await localforage.getItem<QueueEntry[]>(QUEUE_KEY)) ?? [];
+
   const alreadyQueued = queue.some(
     (entry) =>
       entry.op.type === "set" &&
@@ -36,6 +56,7 @@ export async function persistStartAt(
 
   if (alreadyQueued) return;
 
+  // 3. Neither in Firestore nor queued — safe to queue the write.
   queue.push({
     id: `startat_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     op: {

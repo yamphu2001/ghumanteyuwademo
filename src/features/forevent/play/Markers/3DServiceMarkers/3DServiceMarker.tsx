@@ -361,14 +361,17 @@ export default function ServiceMarkers({ map, eventId }: { map: any; eventId: st
     if (!eventId) return;
 
     const cacheKey = `serviceboundaries_${eventId}`;
-    const loadCached = async () => {
-      if (navigator.onLine) return;
-      const cached = await localforage.getItem<ServiceConfig[]>(cacheKey);
-      if (cached) {
-        setServices(cached);
-      }
-    };
-    loadCached();
+
+    // Always seed from localforage first — works both online and offline,
+    // and avoids the race where onSnapshot fires empty before cache loads.
+    localforage.getItem<ServiceConfig[]>(cacheKey).then((cached) => {
+      if (cached && cached.length > 0) setServices(cached);
+    });
+
+    // Don't attempt a live Firestore subscription when offline —
+    // avoids the Firestore internal-cache race that can overwrite our
+    // localforage data with an empty snapshot.
+    if (!navigator.onLine) return;
 
     // ✅ Listen to subcollection instead of parent doc field
     const subColRef = collection(db, "events", eventId, "serviceboundaries");
@@ -384,11 +387,15 @@ export default function ServiceMarkers({ map, eventId }: { map: any; eventId: st
       setServices(list);
       localforage.setItem(cacheKey, list).catch(() => {});
     }, (err) => {
+      // Snapshot failed (network blip after going online) — fall back to cache
       if (err?.code === "unavailable" || err?.message?.includes("Could not reach Cloud Firestore backend")) {
         console.warn("ServiceMarkers offline snapshot warning:", err);
-        return;
+      } else {
+        console.error("ServiceMarkers snapshot error:", err);
       }
-      console.error("ServiceMarkers snapshot error:", err);
+      localforage.getItem<ServiceConfig[]>(cacheKey).then((cached) => {
+        if (cached && cached.length > 0) setServices(cached);
+      });
     });
 
     return () => unsub();

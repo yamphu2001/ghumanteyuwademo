@@ -214,12 +214,15 @@ export default function GhumanteStall({ map, eventId }: { map: any; eventId: str
     if (!eventId) return;
 
     const cacheKey = `ghumantestall_${eventId}`;
-    const loadCached = async () => {
-      if (navigator.onLine) return;
-      const cached = await localforage.getItem<GhumanteStallConfig[]>(cacheKey);
-      if (cached) setGhumanteStalls(cached);
-    };
-    loadCached();
+
+    // Always seed from cache first — works online and offline,
+    // prevents the Firestore internal-cache race on refresh.
+    localforage.getItem<GhumanteStallConfig[]>(cacheKey).then((cached) => {
+      if (cached && cached.length > 0) setGhumanteStalls(cached);
+    });
+
+    // Don't attempt a live subscription when offline
+    if (!navigator.onLine) return;
 
     const subCollectionRef = collection(db, "events", eventId, "ghumantestall");
 
@@ -245,9 +248,13 @@ export default function GhumanteStall({ map, eventId }: { map: any; eventId: str
     }, (error) => {
       if (error?.code === "unavailable" || error?.message?.includes("Could not reach Cloud Firestore backend")) {
         console.warn("GhumanteStall offline snapshot warning:", error);
-        return;
+      } else {
+        console.error("Error listening to ghumantestall subcollection: ", error);
       }
-      console.error("Error listening to ghumantestall subcollection: ", error);
+      // Fall back to cache on any snapshot failure
+      localforage.getItem<GhumanteStallConfig[]>(cacheKey).then((cached) => {
+        if (cached && cached.length > 0) setGhumanteStalls(cached);
+      });
     });
 
     return () => unsub();

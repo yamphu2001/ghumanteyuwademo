@@ -238,12 +238,15 @@ export default function QRcodeMarkers({ map, eventId, userId, onMarkerClick }: Q
     if (!eventId) { setMarkers([]); return; }
 
     const cacheKey = `qrcodemarkers_${eventId}`;
-    const loadCached = async () => {
-      if (navigator.onLine) return;
-      const cached = await localforage.getItem<QRcodeMarkerData[]>(cacheKey);
-      if (cached) setMarkers(cached);
-    };
-    loadCached();
+
+    // Always seed from cache first — works online and offline,
+    // prevents the Firestore internal-cache race on refresh.
+    localforage.getItem<QRcodeMarkerData[]>(cacheKey).then((cached) => {
+      if (cached && cached.length > 0) setMarkers(cached);
+    });
+
+    // Don't attempt a live subscription when offline
+    if (!navigator.onLine) return;
 
     const unsub = onSnapshot(
       collection(db, "events", eventId, "qrcodemarkers"),
@@ -269,9 +272,13 @@ export default function QRcodeMarkers({ map, eventId, userId, onMarkerClick }: Q
       (error) => {
         if (error?.code === "unavailable" || error?.message?.includes("Could not reach Cloud Firestore backend")) {
           console.warn("[QRcodeMarkers] offline snapshot warning:", error);
-          return;
+        } else {
+          console.error("[QRcodeMarkers] snapshot error:", error);
         }
-        console.error("[QRcodeMarkers] snapshot error:", error);
+        // Fall back to cache on any snapshot failure
+        localforage.getItem<QRcodeMarkerData[]>(cacheKey).then((cached) => {
+          if (cached && cached.length > 0) setMarkers(cached);
+        });
       }
     );
 
