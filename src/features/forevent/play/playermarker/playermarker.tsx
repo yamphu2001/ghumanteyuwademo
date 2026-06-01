@@ -59,11 +59,11 @@ export default function PlayerMarker({ map, eventId, iconUrl = "/Mascot.png" }: 
       if (panResumeTimerRef.current) clearTimeout(panResumeTimerRef.current);
       panResumeTimerRef.current = setTimeout(() => {
         userPanningRef.current = false;
-      }, 5000);
+      }, 60000);
     };
 
     map.on("dragstart", onDragStart);
-    map.on("dragend",   onDragEnd);   // dragend, NOT moveend — moveend fires after our own panTo too
+    map.on("dragend",   onDragEnd);   // dragend, hehe NOT moveend — moveend fires after our own panTo too
 
     return () => {
       map.off("dragstart", onDragStart);

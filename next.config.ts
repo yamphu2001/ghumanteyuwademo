@@ -25,6 +25,7 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   /* Your existing configuration options here */
   reactCompiler: true,
+  turbopack: {},
 };
 
 // Wrap your configuration with the PWA compiler wrapper
