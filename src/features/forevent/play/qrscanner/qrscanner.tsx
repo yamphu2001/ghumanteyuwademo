@@ -40,7 +40,7 @@ const QRScanner = ({ onScanSuccess, onClose }: QRScannerProps) => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
-    // Confirm hardware layers are passing active pixel streams
+    // Confirm hardware layers are passing apple active pixel streams
     if (video && canvas && video.readyState >= 4) {
       const now = Date.now();
       
@@ -106,10 +106,10 @@ const QRScanner = ({ onScanSuccess, onClose }: QRScannerProps) => {
             <div className={styles.laserLine} />
           </div>
           <div className={`${styles.hand} ${styles.leftHand} ${isReady ? styles.handVisible : styles.handHidden}`}>
-            <Image src="/images/QRScanner/Left.png" alt="Left hand" fill className={styles.handImageBottomRight} priority />
+            <Image src="/images/QRScanner/Left.png" alt="Left hand" fill className={styles.handImageBottomRight} priority unoptimized />
           </div>
           <div className={`${styles.hand} ${styles.rightHand} ${isReady ? styles.handVisible : styles.handHidden}`}>
-            <Image src="/images/QRScanner/Right.png" alt="Right hand" fill className={styles.handImageTopLeft} priority />
+            <Image src="/images/QRScanner/Right.png" alt="Right hand" fill className={styles.handImageTopLeft} priority unoptimized />
           </div>
         </div>
 

@@ -105,7 +105,22 @@ export default function QRCodeScanner({ eventId, userId, onCloseScanner }: QRCod
         console.warn("[QRCodeScanner] Could not sync scanRadius config:", e);
       }
     };
+    
+    // FIX: Sync on mount and whenever coming back online
     syncScanRadius();
+    
+    // FIX: Listen for online event to re-sync when connection restored
+    // This ensures offline players get admin's updated scanRadius value
+    const handleOnline = () => {
+      console.log("[QRCodeScanner] Back online — re-syncing scanRadius");
+      syncScanRadius();
+    };
+    
+    window.addEventListener("online", handleOnline);
+    
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
   }, [eventId]);
 
   const handleScan = useCallback(
