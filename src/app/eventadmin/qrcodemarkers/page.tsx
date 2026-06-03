@@ -69,7 +69,9 @@ export default function AdminQRcodeMarkerPage() {
   const [isMapFullScreen, setIsMapFullScreen] = useState(false);
   const [eventAreaBoundary, setEventAreaBoundary] = useState<number[][][] | undefined>(undefined);
 
-  // ── NEW: QR modal state ───────────────────────────────────────────────────
+  const [scanRadius, setScanRadius] = useState<number>(10);
+  const [savingConfig, setSavingConfig] = useState(false);
+
   const [qrModal, setQrModal] = useState<{ name: string; qrCodeId: string } | null>(null);
 
   const isEditMode = form.id !== "";
@@ -95,6 +97,22 @@ export default function AdminQRcodeMarkerPage() {
     } catch (e) {
       console.error(e);
     }
+  }, [eventId]);
+
+  // ── Fetch Global Event Config from configs/qrcode ─────────────────────────
+  useEffect(() => {
+    if (!eventId) return;
+    const fetchConfig = async () => {
+      try {
+        const configSnap = await getDoc(doc(db, "events", eventId, "configs", "qrcode"));
+        if (configSnap.exists() && configSnap.data().scanRadius !== undefined) {
+          setScanRadius(Number(configSnap.data().scanRadius));
+        }
+      } catch (e) {
+        console.error("Failed to fetch event configs:", e);
+      }
+    };
+    fetchConfig();
   }, [eventId]);
 
   useEffect(() => {
@@ -124,6 +142,25 @@ export default function AdminQRcodeMarkerPage() {
         lat: data.geometry.coordinates[1],
       }));
       setIsMapFullScreen(false);
+    }
+  };
+
+  // ── Save Global Event Config to configs/qrcode ────────────────────────────
+  const handleSaveConfig = async () => {
+    if (!eventId) return;
+    setSavingConfig(true);
+    try {
+      await setDoc(
+        doc(db, "events", eventId, "configs", "qrcode"),
+        { scanRadius: Number(scanRadius) },
+        { merge: true }
+      );
+      alert("Global scan radius saved successfully!");
+    } catch (error) {
+      console.error("Failed to save scan radius:", error);
+      alert("Failed to save global config.");
+    } finally {
+      setSavingConfig(false);
     }
   };
 
@@ -168,6 +205,29 @@ export default function AdminQRcodeMarkerPage() {
         <h1 style={ui.title}>QR Code Markers</h1>
       </header>
 
+      {/* ── Global Event Configs Section ── */}
+      <section style={{ ...ui.card, maxWidth: "1200px", margin: "0 auto 25px auto" }}>
+        <h2 style={ui.cardTitle}>Global Settings (Applies to all markers)</h2>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: "10px" }}>
+          <div style={{ flex: 1 }}>
+            <Field label="Scan Radius Threshold (in meters)">
+              <input
+                type="number"
+                style={ui.input}
+                value={scanRadius}
+                onChange={(e) => setScanRadius(Number(e.target.value))}
+                placeholder="e.g. 10"
+              />
+            </Field>
+          </div>
+          <div style={{ marginBottom: "14px" }}>
+            <button style={ui.btnPrimary} onClick={handleSaveConfig} disabled={savingConfig}>
+              {savingConfig ? "Saving…" : "Save Radius"}
+            </button>
+          </div>
+        </div>
+      </section>
+
       <main style={ui.mainGrid}>
         {/* ── Form ── */}
         <section style={ui.card}>
@@ -181,7 +241,6 @@ export default function AdminQRcodeMarkerPage() {
             <input style={ui.input} value={form.qrCodeId} onChange={set("qrCodeId")} placeholder="e.g. QR_001" />
           </Field>
 
-          {/* ── NEW: live QR preview inside form when qrCodeId is typed ── */}
           {form.qrCodeId.trim() && (
             <div style={{ textAlign: "center", marginBottom: 14 }}>
               <p style={{ fontSize: "0.75rem", color: "#888", marginBottom: 6 }}>QR Preview</p>
@@ -250,7 +309,6 @@ export default function AdminQRcodeMarkerPage() {
                 </div>
               </div>
               <div style={{ display: "flex", gap: 6 }}>
-                {/* ── NEW: QR button — only shows when qrCodeId exists ── */}
                 {item.qrCodeId && (
                   <button
                     style={ui.btnQR}
@@ -284,11 +342,11 @@ export default function AdminQRcodeMarkerPage() {
         </div>
       )}
 
-      {/* ── NEW: QR Code Modal ── */}
+      {/* ── QR Code Modal ── */}
       {qrModal && (
         <div
           style={ui.qrOverlay}
-          onClick={() => setQrModal(null)} // click outside to close
+          onClick={() => setQrModal(null)}
         >
           <div style={ui.qrBox} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -350,7 +408,6 @@ const ui: Record<string, React.CSSProperties> = {
   listMeta: { fontSize: "0.78rem", color: "#888", marginTop: 2 },
   btnEdit: { background: "#bee3f8", color: "#2b6cb0", padding: "4px 10px", borderRadius: "4px", border: "none", cursor: "pointer" },
   btnDanger: { background: "#feb2b2", color: "red", padding: "4px 10px", borderRadius: "4px", border: "none", cursor: "pointer" },
-  // ── NEW styles ──
   btnQR: { background: "#fef9c3", color: "#854d0e", padding: "4px 10px", borderRadius: "4px", border: "none", cursor: "pointer", fontWeight: 600 },
   qrOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center" },
   qrBox: { background: "#fff", borderRadius: 12, padding: 24, width: 320, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" },

@@ -18,11 +18,35 @@ export default function OfflineSync({ eventId, tilePaths = [] }: OfflineSyncProp
   const [status, setStatus] = useState<SyncStatus>('checking');
   const [progress, setProgress] = useState(0); // 0–100
 
-  // On mount: check if this event is already cached
+  // On mount: check if this event is already cached and validate image cache
   useEffect(() => {
-    localforage.getItem(`boundary_${eventId}`).then((exists) => {
-      setStatus(exists ? 'done' : 'idle');
-    });
+    const validateCache = async () => {
+      const exists = await localforage.getItem(`boundary_${eventId}`);
+      if (!exists) {
+        setStatus('idle');
+        return;
+      }
+      
+      // Validate that the Mascot.png is properly cached
+      try {
+        const cache = await caches.open('offline-map-assets-v1');
+        const cached = await cache.match('/Mascot.png');
+        if (cached && cached.status === 200) {
+          const blob = await cached.blob();
+          if (blob.size > 0) {
+            setStatus('done');
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('[OfflineSync] Cache validation failed:', error);
+      }
+      
+      // If image cache is invalid, reset to idle to force re-sync
+      setStatus('idle');
+    };
+    
+    validateCache();
   }, [eventId]);
 
   const download = async () => {
@@ -60,31 +84,100 @@ export default function OfflineSync({ eventId, tilePaths = [] }: OfflineSyncProp
       setProgress(35);
 
       // ── Step 3: Map style + sprites/fonts ─────────────────────────────────
-      const cache = await caches.open('offline-map-assets');
+      const cache = await caches.open('offline-map-assets-v1');
 
       const coreAssets = [
-        '/map-style.json',
+        'https://tiles.openfreemap.org/styles/bright',
         '/Mascot.png',
       ].filter(Boolean);
 
-      // Fetch one by one so failed assets don't abort the whole batch
-      for (const asset of coreAssets) {
-        try {
-          await cache.add(asset);
-        } catch {
-          console.warn(`[OfflineSync] Skipped asset (not found): ${asset}`);
+      // Helper to validate cached response
+      const validateAndCacheAsset = async (asset: string, retries = 2) => {
+        for (let attempt = 0; attempt < retries; attempt++) {
+          try {
+            const response = await fetch(asset);
+            if (response.ok && response.status === 200) {
+              const blob = await response.blob();
+              if (blob.size > 0) {
+                await cache.put(asset, new Response(blob));
+                console.log(`[OfflineSync] Cached asset: ${asset}`);
+                return true;
+              }
+            }
+          } catch (error) {
+            console.warn(`[OfflineSync] Attempt ${attempt + 1}/${retries} failed for ${asset}:`, error);
+            if (attempt < retries - 1) {
+              await new Promise(r => setTimeout(r, 500)); // Wait before retry
+            }
+          }
         }
+        console.warn(`[OfflineSync] Failed to cache asset after ${retries} attempts: ${asset}`);
+        return false;
+      };
+
+      for (const asset of coreAssets) {
+        await validateAndCacheAsset(asset);
       }
       setProgress(50);
 
-      // ── Step 3: Vector tiles for the arena ────────────────────────────────
+      // ── Step 4: Vector/raster tiles for the arena (derive from boundary)
+      // If `tilePaths` was provided by caller, prefer it. Otherwise compute
+      // a conservative set of tiles for zooms 14..16 covering the event bbox.
+      const tilesSet = new Set<string>();
       const tiles = tilePaths.length > 0 ? tilePaths : [];
-      const tileChunkSize = 10;
 
-      for (let i = 0; i < tiles.length; i += tileChunkSize) {
-        const chunk = tiles.slice(i, i + tileChunkSize);
+      // Helper: convert lon/lat to slippy tile numbers for a zoom
+      const lon2tile = (lon: number, z: number) => Math.floor(((lon + 180) / 360) * Math.pow(2, z));
+      const lat2tile = (lat: number, z: number) => {
+        const latRad = (lat * Math.PI) / 180;
+        return Math.floor(
+          ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * Math.pow(2, z)
+        );
+      };
+
+      if (tiles.length === 0) {
+        try {
+          const boundaryData = await localforage.getItem<[number, number][]>(`boundary_${eventId}`);
+          if (boundaryData && boundaryData.length > 0) {
+            // compute bbox
+            const lons = boundaryData.map((p) => p[0]);
+            const lats = boundaryData.map((p) => p[1]);
+            const minLon = Math.min(...lons);
+            const maxLon = Math.max(...lons);
+            const minLat = Math.min(...lats);
+            const maxLat = Math.max(...lats);
+
+            const ZOOMS = [14, 15, 16];
+            for (const z of ZOOMS) {
+              const xMin = lon2tile(minLon, z);
+              const xMax = lon2tile(maxLon, z);
+              const yMin = lat2tile(maxLat, z); // note lat->y inverted
+              const yMax = lat2tile(minLat, z);
+
+              for (let x = xMin; x <= xMax; x++) {
+                for (let y = yMin; y <= yMax; y++) {
+                  const url = `https://tiles.openfreemap.org/styles/bright`;
+                  tilesSet.add(url);
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('[OfflineSync] Failed to compute tile list from boundary:', err);
+        }
+      } else {
+        for (const t of tiles) tilesSet.add(t);
+      }
+
+      const tileList = Array.from(tilesSet);
+      // Prevent runaway downloads: cap to 1000 tiles
+      const capped = tileList.slice(0, 1000);
+
+      const tileChunkSize = 10;
+      for (let i = 0; i < capped.length; i += tileChunkSize) {
+        const chunk = capped.slice(i, i + tileChunkSize);
         await Promise.allSettled(chunk.map((t) => cache.add(t)));
-        const tileProgress = tiles.length > 0 ? ((i + chunk.length) / tiles.length) * 40 : 40;
+        const tileProgress = capped.length > 0 ? ((i + chunk.length) / capped.length) * 40 : 40;
         setProgress(50 + Math.round(tileProgress));
       }
 
@@ -104,7 +197,13 @@ export default function OfflineSync({ eventId, tilePaths = [] }: OfflineSyncProp
       localforage.removeItem(`ghumantestall_${eventId}`),
     ]);
     try {
-      await caches.delete('offline-map-assets');
+      // Delete both old and new cache versions
+      await Promise.all([
+        caches.delete('offline-map-assets'),
+        caches.delete('offline-map-assets-v1'),
+        caches.delete('offline-marker-images'),
+        caches.delete('offline-marker-images-v1'),
+      ]);
     } catch {/* cache API not available */}
     setStatus('idle');
     setProgress(0);

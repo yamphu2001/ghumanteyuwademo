@@ -1,27 +1,17 @@
-/**
- * Pushes a startat write into the offline queue.
- * Kept in a separate file so page.tsx can import it dynamically
- * (avoids bundling localforage into the initial page chunk).
- *
- * Rules:
- * - If startat already exists in Firestore → skip (even if player re-logs in).
- * - If startat was deleted from Firestore → allow the write.
- * - If already queued locally (offline, not yet flushed) → skip.
- */
-import localforage from "localforage";
 import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import localforage from "localforage";
 
+// Simplified QueueEntry for Firestore only
 interface QueueEntry {
   id: string;
   op: {
-    type: "set";
+    type: 'set';
     path: string;
     data: Record<string, unknown>;
-    merge: boolean;
+    merge?: boolean;
   };
   timestamp: number;
-  eventId: string;
 }
 
 const QUEUE_KEY = "offline_write_queue";
@@ -31,43 +21,49 @@ export async function persistStartAt(
   uid: string,
   humanReadableTime: string
 ): Promise<void> {
-  // 1. Check Firestore first — if startat already exists there, never overwrite it.
-  try {
-    const snap = await getDoc(doc(db, "events", eventId, "player_log", uid));
-    if (snap.exists() && snap.data()?.startat) {
-      // startat is already persisted in Firestore — do nothing.
-      return;
+  const firestorePath = `events/${eventId}/player_log/${uid}`;
+  const docRef = doc(db, "events", eventId, "player_log", uid);
+
+  console.log("[persistStartAt] Starting process for:", firestorePath);
+
+  // 1. Online Check
+  if (navigator.onLine) {
+    try {
+      const snap = await getDoc(docRef);
+      if (snap.exists() && snap.data()?.startat) {
+        console.log("[persistStartAt] Already exists in Firestore. Done.");
+        return;
+      }
+      
+      // If we are online and it doesn't exist, try a direct write
+      await setDoc(docRef, { startat: humanReadableTime }, { merge: true });
+      console.log("[persistStartAt] Successfully wrote to Firestore.");
+      return; // Success!
+    } catch (err) {
+      console.error("[persistStartAt] Direct Firestore write failed (falling back to queue):", err);
     }
-  } catch {
-    // Offline or fetch failed — fall through to the queue check below.
-    // The queue dedup will prevent double-writes when connectivity returns.
   }
 
-  // 2. Check the local offline queue — avoid stacking duplicate pending writes.
-  const queue: QueueEntry[] =
-    (await localforage.getItem<QueueEntry[]>(QUEUE_KEY)) ?? [];
+  // 2. Offline Fallback (Queueing)
+  try {
+    const queue: QueueEntry[] = (await localforage.getItem<QueueEntry[]>(QUEUE_KEY)) ?? [];
+    
+    // Dedupe
+    const alreadyQueued = queue.some((entry) => entry.op.path === firestorePath);
+    if (alreadyQueued) {
+      console.log("[persistStartAt] Already in queue, skipping.");
+      return;
+    }
 
-  const alreadyQueued = queue.some(
-    (entry) =>
-      entry.op.type === "set" &&
-      entry.op.path === `events/${eventId}/player_log/${uid}` &&
-      "startat" in entry.op.data
-  );
+    const newEntry: QueueEntry = {
+      id: `startat_${Date.now()}`,
+      op: { type: 'set', path: firestorePath, data: { startat: humanReadableTime }, merge: true },
+      timestamp: Date.now(),
+    };
 
-  if (alreadyQueued) return;
-
-  // 3. Neither in Firestore nor queued — safe to queue the write.
-  queue.push({
-    id: `startat_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    op: {
-      type: "set",
-      path: `events/${eventId}/player_log/${uid}`,
-      data: { startat: humanReadableTime },
-      merge: true,
-    },
-    timestamp: Date.now(),
-    eventId,
-  });
-
-  await localforage.setItem(QUEUE_KEY, queue);
+    await localforage.setItem(QUEUE_KEY, [...queue, newEntry]);
+    console.log("[persistStartAt] Successfully queued for later sync.");
+  } catch (err) {
+    console.error("[persistStartAt] Critical error queueing data:", err);
+  }
 }

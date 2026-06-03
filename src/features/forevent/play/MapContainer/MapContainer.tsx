@@ -1,3 +1,4 @@
+
 // "use client";
 
 // import React, { useRef, useState, useEffect } from "react";
@@ -15,22 +16,22 @@
 // import GhumanteStall from "../Markers/GhumanteYuwaStall/ghumantestall";
 // import ServiceMarkers from "../Markers/3DServiceMarkers/3DServiceMarker";
 // import ProgressBar from "../ProgressBar/progressbar";
-// import RoulettePage from '@/app/eventsmaker/[eventId]/roulette/page';
+// import RoulettePage from '@/app/eventsmaker/[eventId]/roulette/RoulettePage';
 
 // interface MapContainerProps {
 //   eventId: string;
+//   userId: string; // 🟢 ADDED: Accept the live authenticated user ID
 // }
 
-// export default function MapContainer({ eventId }: MapContainerProps) {
+// export default function MapContainer({ eventId, userId }: MapContainerProps) {
 //   const mapContainer = useRef<HTMLDivElement>(null);
 //   const [showScanner, setShowScanner] = useState<boolean>(false);
 //   const [showFinishScanner, setShowFinishScanner] = useState<boolean>(false);
 //   const [showRoulette, setShowRoulette] = useState<boolean>(false);
 //   const [finishInitialValue, setFinishInitialValue] = useState<string | null>(null);
 
-//   const currentUser = { uid: "UZ31CJRUfFOsJJbb0XbqfLNe4qq2" };
+//   // 🟢 REMOVED: The hardcoded custom string variable is gone
 
-//   // offlineUnavailable = true when player is offline and has no downloaded map data
 //   const { map, isLoaded, offlineUnavailable } = useMapInit(mapContainer, eventId);
 
 //   useEffect(() => {
@@ -68,13 +69,12 @@
 //     };
 //   }, []);
 
-//   // Guard: player went offline without downloading map data first
 //   if (offlineUnavailable) {
 //     return (
 //       <div className={styles.mapWrapper} style={{
 //         display: "flex",
 //         flexDirection: "column",
-//         alignItems: "center",
+//         alignItems: "center", // This does all the horizontal centering work!
 //         justifyContent: "center",
 //         gap: "16px",
 //         background: "#0B0E14",
@@ -96,7 +96,6 @@
 //     <div className={styles.mapWrapper}>
 //       <div ref={mapContainer} className={styles.mapCanvas} />
 
-//       {/* Offline indicator — shown as a subtle badge during offline play */}
 //       {typeof window !== "undefined" && !navigator.onLine && (
 //         <div style={{
 //           position: "absolute", top: "12px", left: "50%", transform: "translateX(-50%)",
@@ -110,23 +109,23 @@
 
 //       {isLoaded && map.current && (
 //         <>
-//           {showScanner && currentUser?.uid && (
+//           {showScanner && userId && (
 //             <div className="fixed inset-0 z-50 bg-black w-full h-full execution-layer">
 //               <div className="relative w-full h-full">
 //                 <QRCodeScanner
 //                   eventId={eventId}
-//                   userId={currentUser.uid}
+//                   userId={userId} // 🟢 UPDATED
 //                   onCloseScanner={() => setShowScanner(false)}
 //                 />
 //               </div>
 //             </div>
 //           )}
 
-//           {showFinishScanner && currentUser?.uid && (
+//           {showFinishScanner && userId && (
 //             <div className="fixed inset-0 z-50 bg-black w-full h-full execution-layer">
 //               <div className="relative w-full h-full">
 //                 <FinishGame
-//                   uid={currentUser.uid}
+//                   uid={userId} // 🟢 UPDATED
 //                   eventId={eventId}
 //                   initialValue={finishInitialValue}
 //                   onClose={() => {
@@ -151,7 +150,7 @@
 //           {isLoaded && <ProgressBar />}
 //           <Compass map={map.current} />
 //           <OneHandedMenu eventId={eventId as string} />
-//           <QRcodeMarkers map={map.current} eventId={eventId} userId={currentUser.uid} />
+//           <QRcodeMarkers map={map.current} eventId={eventId} userId={userId} /> {/* 🟢 UPDATED */}
 //           <GhumanteStall map={map.current} eventId={eventId} />
 //           <ServiceMarkers map={map.current} eventId={eventId} />
 //         </>
@@ -183,7 +182,7 @@ import RoulettePage from '@/app/eventsmaker/[eventId]/roulette/RoulettePage';
 
 interface MapContainerProps {
   eventId: string;
-  userId: string; // 🟢 ADDED: Accept the live authenticated user ID
+  userId: string; 
 }
 
 export default function MapContainer({ eventId, userId }: MapContainerProps) {
@@ -192,8 +191,6 @@ export default function MapContainer({ eventId, userId }: MapContainerProps) {
   const [showFinishScanner, setShowFinishScanner] = useState<boolean>(false);
   const [showRoulette, setShowRoulette] = useState<boolean>(false);
   const [finishInitialValue, setFinishInitialValue] = useState<string | null>(null);
-
-  // 🟢 REMOVED: The hardcoded custom string variable is gone
 
   const { map, isLoaded, offlineUnavailable } = useMapInit(mapContainer, eventId);
 
@@ -237,7 +234,7 @@ export default function MapContainer({ eventId, userId }: MapContainerProps) {
       <div className={styles.mapWrapper} style={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "center", // This does all the horizontal centering work!
+        alignItems: "center", 
         justifyContent: "center",
         gap: "16px",
         background: "#0B0E14",
@@ -277,7 +274,7 @@ export default function MapContainer({ eventId, userId }: MapContainerProps) {
               <div className="relative w-full h-full">
                 <QRCodeScanner
                   eventId={eventId}
-                  userId={userId} // 🟢 UPDATED
+                  userId={userId} 
                   onCloseScanner={() => setShowScanner(false)}
                 />
               </div>
@@ -288,7 +285,7 @@ export default function MapContainer({ eventId, userId }: MapContainerProps) {
             <div className="fixed inset-0 z-50 bg-black w-full h-full execution-layer">
               <div className="relative w-full h-full">
                 <FinishGame
-                  uid={userId} // 🟢 UPDATED
+                  uid={userId} 
                   eventId={eventId}
                   initialValue={finishInitialValue}
                   onClose={() => {
@@ -313,7 +310,12 @@ export default function MapContainer({ eventId, userId }: MapContainerProps) {
           {isLoaded && <ProgressBar />}
           <Compass map={map.current} />
           <OneHandedMenu eventId={eventId as string} />
-          <QRcodeMarkers map={map.current} eventId={eventId} userId={userId} /> {/* 🟢 UPDATED */}
+          
+          {/* 🌟 FIX: Guard added to protect against premature unauthenticated queries */}
+          {userId && (
+            <QRcodeMarkers map={map.current} eventId={eventId} userId={userId} />
+          )}
+          
           <GhumanteStall map={map.current} eventId={eventId} />
           <ServiceMarkers map={map.current} eventId={eventId} />
         </>

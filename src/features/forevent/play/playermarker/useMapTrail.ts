@@ -37,21 +37,10 @@ export function useMapTrail(
   const trailCoordsRef = useRef<TrailPoint[]>([]);
   const storageKey = `player_trail_${eventId}`;
 
-  // Toggle Visibility Layer on shape state changes
-  useEffect(() => {
-    if (!map) return;
-    if (map.getLayer("player-trail-circle")) {
-      map.setLayoutProperty("player-trail-circle", "visibility", shape === "circle" ? "visible" : "none");
-    }
-    if (map.getLayer("player-trail-square")) {
-      map.setLayoutProperty("player-trail-square", "visibility", shape === "square" ? "visible" : "none");
-    }
-  }, [shape, map]);
+  const ensureTrailSource = (targetMap: maplibregl.Map) => {
+    if (targetMap.getSource("player-trail")) return;
 
-  useEffect(() => {
-    if (!map || !eventId) return;
-
-    if (!map.hasImage("square-sdf")) {
+    if (!targetMap.hasImage("square-sdf")) {
       const canvas = document.createElement("canvas");
       canvas.width = 16;
       canvas.height = 16;
@@ -60,31 +49,29 @@ export function useMapTrail(
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, 16, 16);
         const imageData = ctx.getImageData(0, 0, 16, 16);
-        map.addImage("square-sdf", imageData, { sdf: true });
+        targetMap.addImage("square-sdf", imageData, { sdf: true });
       }
     }
 
-    if (!map.getSource("player-trail")) {
-      map.addSource("player-trail", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
+    targetMap.addSource("player-trail", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
 
-      // 1. Circle Layer with dynamic zoom scaling
-      map.addLayer({
+    if (!targetMap.getLayer("player-trail-circle")) {
+      targetMap.addLayer({
         id: "player-trail-circle",
         type: "circle",
         source: "player-trail",
         layout: { visibility: shape === "circle" ? "visible" : "none" },
         paint: {
-          // FIX: Smoothly scale circle size down when zooming out, up when zooming in
           "circle-radius": [
             "interpolate",
             ["linear"],
             ["zoom"],
-            10, 1.5,  // At zoom 10 (far out), dots are tiny 1.5px
-            15, 4.5,  // At zoom 15 (mid range), dots are 4.5px
-            19, 9.0   // At zoom 19 (close up), dots are a crisp 9px
+            10, 1.5,
+            15, 4.5,
+            19, 9.0
           ],
           "circle-color": ["get", "color"],
           "circle-stroke-width": [
@@ -95,13 +82,12 @@ export function useMapTrail(
             16, 2
           ],
           "circle-stroke-color": "#FFFFFF",
-          // FIX: Completely fade out trail layers if zoomed out past level 12
           "circle-opacity": [
             "interpolate",
             ["linear"],
             ["zoom"],
-            12, 0,    // Invisible at zoom 12 or lower
-            14, 1     // Fully solid at zoom 14 or higher
+            12, 0,
+            14, 1
           ],
           "circle-stroke-opacity": [
             "interpolate",
@@ -112,22 +98,22 @@ export function useMapTrail(
           ]
         },
       });
+    }
 
-      // 2. Square Layer with dynamic zoom scaling
-      map.addLayer({
+    if (!targetMap.getLayer("player-trail-square")) {
+      targetMap.addLayer({
         id: "player-trail-square",
         type: "symbol",
         source: "player-trail",
         layout: {
           "icon-image": "square-sdf",
-          // FIX: Smoothly scale icon sizes across zoom ranges
           "icon-size": [
             "interpolate",
             ["linear"],
             ["zoom"],
-            10, 0.2,   // Tiny icons when zoomed out
-            15, 0.55,  // Medium sizing
-            19, 1.0    // Large scaling when close up
+            10, 0.2,
+            15, 0.55,
+            19, 1.0
           ],
           "icon-allow-overlap": true,
           "visibility": shape === "square" ? "visible" : "none",
@@ -142,7 +128,6 @@ export function useMapTrail(
             12, 0.5,
             16, 2
           ],
-          // FIX: Gracefully fade icon elements out to prevent city-view clustering clutter
           "icon-opacity": [
             "interpolate",
             ["linear"],
@@ -153,6 +138,23 @@ export function useMapTrail(
         },
       });
     }
+  };
+
+  // Toggle Visibility Layer on shape state changes
+  useEffect(() => {
+    if (!map) return;
+    if (map.getLayer("player-trail-circle")) {
+      map.setLayoutProperty("player-trail-circle", "visibility", shape === "circle" ? "visible" : "none");
+    }
+    if (map.getLayer("player-trail-square")) {
+      map.setLayoutProperty("player-trail-square", "visibility", shape === "square" ? "visible" : "none");
+    }
+  }, [shape, map]);
+
+  useEffect(() => {
+    if (!map || !eventId) return;
+
+    ensureTrailSource(map);
 
     const savedTrail = localStorage.getItem(storageKey);
     if (savedTrail) {
@@ -160,7 +162,7 @@ export function useMapTrail(
         const parsedTrail = JSON.parse(savedTrail) as TrailPoint[];
         trailCoordsRef.current = parsedTrail;
 
-        const source = map.getSource("player-trail") as maplibregl.GeoJSONSource;
+        const source = map.getSource("player-trail") as maplibregl.GeoJSONSource | undefined;
         if (source) {
           source.setData({
             type: "FeatureCollection",
@@ -207,7 +209,8 @@ export function useMapTrail(
 
     localStorage.setItem(storageKey, JSON.stringify(points));
 
-    const source = map.getSource("player-trail") as maplibregl.GeoJSONSource;
+    ensureTrailSource(map);
+    const source = map.getSource("player-trail") as maplibregl.GeoJSONSource | undefined;
     if (source) {
       source.setData({
         type: "FeatureCollection",
@@ -222,6 +225,4 @@ export function useMapTrail(
 
   return { addTrailPoint };
 }
-
-
 

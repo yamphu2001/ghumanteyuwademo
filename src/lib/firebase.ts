@@ -1,60 +1,14 @@
-// import { initializeApp, getApps, getApp } from "firebase/app";
-// import { getAuth } from "firebase/auth";
-// import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
-// import { getDatabase } from "firebase/database";
-
-// const firebaseConfig = {
-//   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-//   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-//   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-//   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-//   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-//   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-//   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-// };
-
-// const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-// // Suppress Firebase offline warning noise in the console
-// if (typeof window !== "undefined") {
-//   const originalWarn = console.warn;
-//   const originalError = console.error;
-
-//   const isFirestoreOfflineLog = (args: unknown[]) => {
-//     return args.some((arg) => {
-//       if (typeof arg !== "string") return false;
-//       return arg.includes("@firebase/firestore") &&
-//         (arg.includes("Could not reach") || arg.includes("Connection failed") || arg.includes("code=unavailable"));
-//     });
-//   };
-
-//   console.warn = (...args: unknown[]) => {
-//     if (isFirestoreOfflineLog(args)) return;
-//     originalWarn(...args);
-//   };
-
-//   console.error = (...args: unknown[]) => {
-//     if (isFirestoreOfflineLog(args)) return;
-//     originalError(...args);
-//   };
-// }
-
-// export const auth = getAuth(app);
-
-// // initializeFirestore with persistentLocalCache replaces the deprecated
-// // enableIndexedDbPersistence() — works across multiple tabs without errors
-// export const db = initializeFirestore(app, {
-//   localCache: persistentLocalCache(),
-// });
-
-// export const rtdb = getDatabase(app);
-
-
-
-
+// firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, signOut as firebaseSignOut } from "firebase/auth";
-import { initializeFirestore, persistentLocalCache, terminate, clearIndexedDbPersistence, getFirestore } from "firebase/firestore";
+import { 
+  initializeFirestore, 
+  persistentLocalCache, 
+  persistentMultipleTabManager, // 🌟 Added for multi-tab/HMR safety
+  terminate, 
+  clearIndexedDbPersistence, 
+  getFirestore 
+} from "firebase/firestore";
 import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
@@ -113,13 +67,16 @@ export const auth = getAuth(app);
 
 /**
  * Safe Firestore initialization guard for Next.js hot-reload.
- * getFirestore() returns the existing instance if already initialized,
- * so we try initializeFirestore first and fall back on error.
+ * Enforces persistentMultipleTabManager so cache sync never hangs on network shifts.
  */
 import type { Firestore } from "firebase/firestore";
 let db: Firestore;
 try {
-  db = initializeFirestore(app, { localCache: persistentLocalCache() });
+  db = initializeFirestore(app, { 
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager() // 🌟 FIXES HMR INTERACTION LOCKS
+    }) 
+  });
 } catch {
   // Already initialized (hot-reload) — reuse the existing instance
   db = getFirestore(app);
@@ -129,28 +86,25 @@ export { db };
 export const rtdb = getDatabase(app);
 
 /**
- * 🟢 FIX 2: Infinite Loop Proof Session Clearer
- * Optimized to be safely triggered anywhere—including on the login page mount.
+ * 🟢 Infinite Loop Proof Session Clearer
  */
 export async function safeSignOut() {
   try {
-    // 1. Wipe local custom queues instantly
     if (typeof window !== "undefined") {
       localStorage.clear(); 
     }
 
-    // 2. Shut down the live pipeline to prevent ongoing permissions checks
+    // Shut down the live pipeline safely
     await terminate(db);
 
-    // 3. Clear cache tracking states
+    // Clear cache tracking states
     await clearIndexedDbPersistence(db);
 
-    // 4. Revoke active user instance token
+    // Revoke token
     await firebaseSignOut(auth);
     
     console.log("[Auth Clean] Cache successfully wiped.");
     
-    // 5. Only force a hard-reload redirect if the user isn't already sitting on the login page
     if (typeof window !== "undefined" && window.location.pathname !== "/login") {
       window.location.href = "/login"; 
     }
