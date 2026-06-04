@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
@@ -8,7 +9,7 @@ import { rtdb } from "@/lib/firebase";
 import { useOfflineQueue } from '@/features/forevent/play/useOfflineQueue';
 import localforage from "localforage";
 import QRScanner from "../qrscanner";
-import { MarkerPopup, QRcodeMarkerData } from "@/features/forevent/play/Markers/QRcodeMarkers/popup";
+import { MarkerPopup, TooFarPopup, AlreadyScannedPopup, QRcodeMarkerData } from "@/features/forevent/play/Markers/QRcodeMarkers/popup";
 
 function getDistanceInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371e3;
@@ -23,9 +24,6 @@ function getDistanceInMeters(lat1: number, lon1: number, lat2: number, lon2: num
   return R * c;
 }
 
-// ── GPS helper: fresh fix with cached fallback ──
-// maximumAge: 10000 avoids forcing a slow satellite re-lock on every scan.
-// If GPS errors or times out, falls back to last_position saved by usePlayerMovement.
 function getUserLocation(eventId: string): Promise<{ latitude: number; longitude: number }> {
   return new Promise((resolve, reject) => {
     let cachedPosition: { latitude: number; longitude: number } | null = null;
@@ -105,19 +103,16 @@ export default function QRCodeScanner({ eventId, userId, onCloseScanner }: QRCod
         console.warn("[QRCodeScanner] Could not sync scanRadius config:", e);
       }
     };
-    
-    // FIX: Sync on mount and whenever coming back online
+
     syncScanRadius();
-    
-    // FIX: Listen for online event to re-sync when connection restored
-    // This ensures offline players get admin's updated scanRadius value
+
     const handleOnline = () => {
       console.log("[QRCodeScanner] Back online — re-syncing scanRadius");
       syncScanRadius();
     };
-    
+
     window.addEventListener("online", handleOnline);
-    
+
     return () => {
       window.removeEventListener("online", handleOnline);
     };
@@ -384,62 +379,17 @@ export default function QRCodeScanner({ eventId, userId, onCloseScanner }: QRCod
           </div>
         </div>
       )}
-      {scanState === "too_far" && foundMarker && <TooFarPopup marker={foundMarker} onClose={handleClose} />}
       {scanState === "not_found" && (
         <div style={s.overlay}>
           <div style={{ ...s.pill, background: "#fee2e2", color: "#991b1b" }}>❌ QR code not found for this event</div>
         </div>
       )}
+      {scanState === "too_far" && foundMarker && <TooFarPopup marker={foundMarker} onClose={handleClose} />}
       {scanState === "found" && foundMarker && <MarkerPopup marker={foundMarker} onClose={handleClose} />}
       {scanState === "already_scanned" && foundMarker && <AlreadyScannedPopup marker={foundMarker} onClose={handleClose} />}
     </div>
   );
 }
-
-function TooFarPopup({ marker, onClose }: { marker: QRcodeMarkerData; onClose: () => void }) {
-  return (
-    <div style={s.overlay} onClick={onClose}>
-      <div style={popupStyles.sheet} onClick={(e) => e.stopPropagation()}>
-        <button style={popupStyles.closeBtn} onClick={onClose}>✕</button>
-        <div style={popupStyles.header}>
-          <h2 style={{ ...popupStyles.title, color: "#991b1b" }}>Too Far Away!</h2>
-          <p style={popupStyles.subtitle}>{marker.name || "This QR code"}</p>
-        </div>
-        <div style={popupStyles.body}>
-          <p style={popupStyles.message}>You must be closer to the physical location to scan this marker. Get closer and try again!</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AlreadyScannedPopup({ marker, onClose }: { marker: QRcodeMarkerData; onClose: () => void }) {
-  return (
-    <div style={s.overlay} onClick={onClose}>
-      <div style={popupStyles.sheet} onClick={(e) => e.stopPropagation()}>
-        <button style={popupStyles.closeBtn} onClick={onClose}>✕</button>
-        <div style={popupStyles.header}>
-          <h2 style={popupStyles.title}>Already Scanned</h2>
-          <p style={popupStyles.subtitle}>{marker.name || "This QR code"} has already been recorded.</p>
-        </div>
-        <div style={popupStyles.body}>
-          <p style={popupStyles.message}>This QR code has already been scanned. Try a different code.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const popupStyles: Record<string, React.CSSProperties> = {
-  sheet: { position: "relative", width: "100%", maxWidth: 480, maxHeight: "85vh", overflowY: "auto", backgroundColor: "#fff", borderRadius: "20px 20px 0 0", boxShadow: "0 -4px 30px rgba(0,0,0,0.2)", padding: 24 },
-  closeBtn: { position: "absolute", top: 14, right: 16, zIndex: 10, background: "rgba(255,255,255,0.9)", border: "none", borderRadius: "50%", width: 34, height: 34, fontSize: 16, cursor: "pointer", color: "#333", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" },
-  header: { marginBottom: 22 },
-  title: { margin: 0, fontSize: "1.4rem", fontWeight: 700, color: "#0f172a" },
-  subtitle: { margin: "8px 0 0", color: "#475569", fontSize: "0.95rem" },
-  body: { display: "flex", flexDirection: "column", gap: 12 },
-  message: { margin: 0, color: "#334155", fontSize: "0.95rem", lineHeight: 1.6 },
-  description: { margin: 0, color: "#64748b", fontSize: "0.9rem", lineHeight: 1.5 },
-};
 
 const s: Record<string, React.CSSProperties> = {
   overlay: { position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, pointerEvents: "auto" },

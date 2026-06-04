@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
@@ -17,7 +18,7 @@ type EventConfig = {
 
 export default function ProgressBarAdmin() {
   const { eventId } = useEventId();
-  
+
   const [config, setConfig] = useState<EventConfig>({
     enabled: false,
     activeCategories: [],
@@ -25,15 +26,13 @@ export default function ProgressBarAdmin() {
   const [loadingConfig, setLoadingConfig] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Fetch settings directly from events/{eventId}/progressbar/config
   useEffect(() => {
     if (!eventId) return;
     setLoadingConfig(true);
 
     const fetchConfig = async () => {
       try {
-        // 🟢 FIXED PATH: Direct sub-collection under the event (No 'settings' folder)
-        const settingsRef = doc(db, "events", eventId, "progressbar", "config"); 
+        const settingsRef = doc(db, "events", eventId, "progressbar", "config");
         const snap = await getDoc(settingsRef);
 
         if (snap.exists()) {
@@ -64,7 +63,6 @@ export default function ProgressBarAdmin() {
     }));
   };
 
-  // Save to events/{eventId}/progressbar/config
   const handleSave = async () => {
     if (!eventId) {
       alert("No Event ID selected.");
@@ -72,8 +70,7 @@ export default function ProgressBarAdmin() {
     }
     setSaving(true);
     try {
-      // 🟢 FIXED PATH: Direct sub-collection under the event (No 'settings' folder)
-      const settingsRef = doc(db, "events", eventId, "progressbar", "config"); 
+      const settingsRef = doc(db, "events", eventId, "progressbar", "config");
       await setDoc(settingsRef, {
         enabled: config.enabled,
         activeCategories: config.activeCategories,
@@ -89,89 +86,119 @@ export default function ProgressBarAdmin() {
 
   if (!eventId) {
     return (
-      <div style={{ padding: "40px", color: "#64748b", fontWeight: "bold" }}>
+      <div style={{ padding: 40, fontFamily: "monospace", color: "#999", fontSize: 12 }}>
         Please select an event in the sidebar to manage Progress Bar settings.
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "40px", maxWidth: "520px", fontFamily: "sans-serif" }}>
-      <h1 style={{ fontSize: "24px", fontWeight: "900", marginBottom: "4px" }}>
-        Progress Bar Settings
-      </h1>
-      
-      {/* Accurate breadcrumb indicator reflecting your database structural layout */}
-      <p style={{ fontSize: "11px", color: "#94a3b8", marginBottom: "24px", fontFamily: "monospace" }}>
-        events / {eventId} / progressbar / <strong>config</strong>
-      </p>
+    <div style={{ background: "#fff", minHeight: "100vh", padding: 28, fontFamily: "monospace" }}>
+
+      {/* ── Page Header ── */}
+      <div style={{ borderBottom: "3px solid #000", paddingBottom: 16, marginBottom: 28 }}>
+        <div style={{ fontSize: 10, letterSpacing: 3, color: "#dc2626", fontWeight: 700, marginBottom: 4 }}>
+          FOREVENT
+        </div>
+        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: "#000", letterSpacing: 1 }}>
+          PROGRESS BAR
+        </h1>
+        <div style={{ fontSize: 10, color: "#999", marginTop: 6, letterSpacing: 0.5 }}>
+          events / {eventId} / progressbar / <span style={{ color: "#dc2626", fontWeight: 700 }}>config</span>
+        </div>
+      </div>
 
       {loadingConfig ? (
-        <div style={{ padding: "20px", color: "#94a3b8", fontWeight: "600" }}>
-          Syncing configuration...
+        <div style={{ padding: 20, fontFamily: "monospace", fontSize: 12, color: "#999", letterSpacing: 2 }}>
+          SYNCING CONFIGURATION...
         </div>
       ) : (
-        <div style={{ background: "#f8fafc", padding: "24px", borderRadius: "20px", border: "1px solid #e2e8f0" }}>
+        <div style={{ maxWidth: 480, border: "2px solid #000", padding: 24, background: "#fff" }}>
 
-          <label style={{ display: "flex", alignItems: "center", cursor: "pointer", marginBottom: "20px" }}>
+          {/* ── Enable toggle ── */}
+          <div style={{ fontSize: 10, letterSpacing: 2, color: "#dc2626", fontWeight: 700, marginBottom: 14 }}>
+            ● VISIBILITY
+          </div>
+
+          <label style={{
+            display: "flex", alignItems: "center", cursor: "pointer",
+            padding: "14px 16px",
+            border: config.enabled ? "1.5px solid #dc2626" : "1.5px solid #e5e5e5",
+            background: config.enabled ? "#fef2f2" : "#fafafa",
+            marginBottom: 24,
+            gap: 12,
+          }}>
             <input
               type="checkbox"
               checked={config.enabled}
               onChange={(e) => setConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
-              style={{ width: "22px", height: "22px", marginRight: "12px", accentColor: "#2563eb" }}
+              style={{ width: 18, height: 18, accentColor: "#dc2626", cursor: "pointer" }}
             />
-            <span style={{ fontWeight: "bold", color: "#1e293b" }}>
+            <span style={{ fontWeight: 700, fontSize: 12, color: "#000", letterSpacing: 0.5 }}>
               Enable Progress Bar Component
             </span>
+            {config.enabled && (
+              <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, letterSpacing: 1, color: "#dc2626", background: "#fef2f2", border: "1px solid #dc2626", padding: "2px 8px" }}>
+                ON
+              </span>
+            )}
           </label>
 
-          <hr style={{ border: "0", borderTop: "1px solid #e2e8f0", margin: "20px 0" }} />
+          <div style={{ borderTop: "1.5px solid #e5e5e5", marginBottom: 20 }} />
 
-          <p style={{ fontWeight: "800", fontSize: "11px", color: "#94a3b8", textTransform: "uppercase", marginBottom: "12px" }}>
-            Include in calculation:
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {CATEGORIES.map((cat) => (
-              <label
-                key={cat.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  background: "white",
-                  padding: "12px",
-                  borderRadius: "10px",
-                  border: config.activeCategories.includes(cat.id)
-                    ? "1px solid #2563eb"
-                    : "1px solid #f1f5f9",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={config.activeCategories.includes(cat.id)}
-                  onChange={() => toggleCategory(cat.id)}
-                  style={{ marginRight: "12px", width: "18px", height: "18px", accentColor: "#2563eb" }}
-                />
-                <span style={{ fontWeight: "600", color: "#475569" }}>{cat.label}</span>
-              </label>
-            ))}
+          {/* ── Categories ── */}
+          <div style={{ fontSize: 10, letterSpacing: 2, color: "#dc2626", fontWeight: 700, marginBottom: 14 }}>
+            ● INCLUDE IN CALCULATION
           </div>
 
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {CATEGORIES.map((cat) => {
+              const active = config.activeCategories.includes(cat.id);
+              return (
+                <label
+                  key={cat.id}
+                  style={{
+                    display: "flex", alignItems: "center", cursor: "pointer", gap: 12,
+                    padding: "12px 16px",
+                    border: active ? "1.5px solid #dc2626" : "1.5px solid #e5e5e5",
+                    background: active ? "#fef2f2" : "#fafafa",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={active}
+                    onChange={() => toggleCategory(cat.id)}
+                    style={{ width: 16, height: 16, accentColor: "#dc2626", cursor: "pointer" }}
+                  />
+                  <span style={{ fontWeight: active ? 700 : 400, fontSize: 12, color: active ? "#000" : "#666" }}>
+                    {cat.label}
+                  </span>
+                  {active && (
+                    <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, letterSpacing: 1, color: "#dc2626" }}>
+                      ✓
+                    </span>
+                  )}
+                </label>
+              );
+            })}
+          </div>
+
+          {/* ── Save ── */}
           <button
             onClick={handleSave}
             disabled={saving}
             style={{
-              marginTop: "30px",
+              marginTop: 24,
               width: "100%",
-              padding: "16px",
-              background: "#0f172a",
-              color: "white",
+              padding: "13px 0",
+              background: saving ? "#e5e5e5" : "#dc2626",
+              color: saving ? "#999" : "#fff",
               border: "none",
-              borderRadius: "14px",
               cursor: saving ? "not-allowed" : "pointer",
-              fontWeight: "900",
-              opacity: saving ? 0.7 : 1,
-              transition: "0.2s",
+              fontFamily: "monospace",
+              fontWeight: 900,
+              fontSize: 12,
+              letterSpacing: 2,
             }}
           >
             {saving ? "SAVING..." : "SAVE CONFIGURATION"}

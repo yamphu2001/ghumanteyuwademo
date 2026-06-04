@@ -417,52 +417,7 @@ export default function RouletteAdmin() {
             </div>
           </div>
 
-          {/* 🌟 NEW ADDITION: Live Claim Logs Ledger View */}
-          {/* <div className="border-4 border-black p-6 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <h3 className="font-black uppercase text-xl mb-4 flex items-center gap-2 border-b-2 border-black pb-2">
-              <Trophy className="text-red-600" size={22} /> Realtime Claims Ledger
-            </h3>
-            
-            {winners.length === 0 ? (
-              <p className="text-center py-8 font-bold uppercase text-gray-400 text-xs tracking-wider">
-                No roulette prize claims recorded yet for this event
-              </p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b-2 border-black bg-gray-50">
-                      <th className="p-3 text-[10px] font-black uppercase tracking-wider">User ID</th>
-                      <th className="p-3 text-[10px] font-black uppercase tracking-wider">Won Prize</th>
-                      <th className="p-3 text-[10px] font-black uppercase tracking-wider">Claim Timestamp</th>
-                      <th className="p-3 text-[10px] font-black uppercase tracking-wider text-right">Activity Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {winners.map((winner) => (
-                      <tr key={winner.userId} className="border-b border-gray-200 hover:bg-red-50/50 transition-colors">
-                        <td className="p-3 font-mono text-xs font-bold text-gray-600 truncate max-w-[150px]">
-                          {winner.userId}
-                        </td>
-                        <td className="p-3">
-                          <span className="inline-block px-2 py-1 bg-black text-white text-xs font-black uppercase tracking-tight">
-                            {winner.roulettePrize}
-                          </span>
-                        </td>
-                        <td className="p-3 font-bold text-xs text-gray-700">
-                          {winner.prizeClaim}
-                        </td>
-                        <td className="p-3 text-right text-xs font-black">
-                          <span className="text-gray-400 font-normal mr-2">QR: {winner.qrPoints ?? 0}</span>
-                          <span className="text-red-600">Quiz: {winner.quizPoints ?? 0}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div> */}
+         
         </div>
       )}
     </div>

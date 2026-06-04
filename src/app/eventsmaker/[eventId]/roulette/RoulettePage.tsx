@@ -158,19 +158,22 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
             color: p.color || "#000000",
             remaining: stockData[p.id]?.remaining ?? p.quantity ?? 1,
           }))
+          .map(p => p) // keeping tracking map uniform
           .filter(p => p.remaining > 0);
 
         if (mounted) setPrizes(livePrizes);
 
-        // 🌟 UPDATED: Fetches directly from top-level layout tracking fields
-        const prizeSnap = await get(ref(rtdb, `eventsProgress/${eventId}/${currentUser.uid}/prize`));
-        const quizResultSnap = await get(ref(rtdb, `eventsProgress/${eventId}/${currentUser.uid}/quizResult`));
+        // 🌟 FIXED STRATEGY: Read full session record block to avoid object schema variant omissions
+        const progressSnap = await get(ref(rtdb, `eventsProgress/${eventId}/${currentUser.uid}`));
+        const progressData = progressSnap.exists() ? progressSnap.val() : {};
         
-        const prizeStatus = prizeSnap.val();
-        const quizResult = quizResultSnap.val() || {};
+        const prizeStatus = progressData.prize || progressData.userInfo?.prize || null;
+        const quizResult = progressData.quizResult || progressData.userInfo?.quizResult || {};
 
-        // 🌟 UPDATED: Check status directly matching the parent-level layout change
-        if (prizeStatus === "completed") {
+        const normalizedPrizeStatus = typeof prizeStatus === "string" ? prizeStatus.toLowerCase() : "";
+
+        // 🌟 FIXED STRATEGY: Block users if status matches either spin completion OR admin claim
+        if (normalizedPrizeStatus === "completed" || normalizedPrizeStatus === "claimed") {
           // Fetch from Firestore player_log collection to obtain exact prize metadata for fallback screen UI
           const playerLogSnap = await getDoc(doc(db, "events", eventId, "player_log", currentUser.uid));
           const fallbackPrizeName = playerLogSnap.exists() ? playerLogSnap.data()?.roulettePrize : "Claimed";
@@ -246,7 +249,6 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
         transition: { duration: 5, ease: [0.12, 0, 0.02, 1] },
       });
 
-      // 🌟 UPDATED: Removes userInfo table nesting layer, saving directly as a flat property field
       const userProgressRef = ref(rtdb, `eventsProgress/${eventId}/${user.uid}`);
       await update(userProgressRef, { prize: "completed" });
 

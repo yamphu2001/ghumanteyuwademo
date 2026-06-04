@@ -307,6 +307,7 @@ export default function MapContainer({ eventId, userId }: MapContainerProps) {
           )}
 
           <PlayerMarker map={map.current} eventId={eventId} iconUrl="/Mascot.png" />
+          
           {isLoaded && <ProgressBar />}
           <Compass map={map.current} />
           <OneHandedMenu eventId={eventId as string} />

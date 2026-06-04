@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 
@@ -197,9 +198,7 @@ export function useMapTrail(
       }
     }
 
-    // panTo lives here only for trail points (real movement ≥ 8m).
-    // The marker itself is updated every GPS tick in PlayerMarker.updateMarkerPosition,
-    // so the icon always tracks the player smoothly without waiting for a trail dot.
+    
     map.panTo([longitude, latitude], { duration: 300 });
 
     points.push({

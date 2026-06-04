@@ -197,20 +197,32 @@ export default function AdminQRcodeMarkerPage() {
     await deleteDoc(doc(db, "events", eventId!, COLLECTION_NAME, id));
   };
 
-  if (!eventId) return <div style={ui.wrapper}>Please select an event.</div>;
+  if (!eventId) return (
+    <div style={{ padding: 40, fontFamily: "monospace", color: "#999" }}>Please select an event.</div>
+  );
 
   return (
-    <div style={ui.wrapper}>
-      <header style={ui.header}>
-        <h1 style={ui.title}>QR Code Markers</h1>
-      </header>
+    <div style={{ background: "#fff", minHeight: "100vh", padding: 28, fontFamily: "monospace" }}>
 
-      {/* ── Global Event Configs Section ── */}
-      <section style={{ ...ui.card, maxWidth: "1200px", margin: "0 auto 25px auto" }}>
-        <h2 style={ui.cardTitle}>Global Settings (Applies to all markers)</h2>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: "10px" }}>
+      {/* ── Page Header ── */}
+      <div style={{ borderBottom: "3px solid #000", paddingBottom: 16, marginBottom: 28, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ fontSize: 10, letterSpacing: 3, color: "#dc2626", fontWeight: 700, marginBottom: 4 }}>FOREVENT</div>
+          <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: "#000", letterSpacing: 1 }}>QR CODE MARKERS</h1>
+        </div>
+        <div style={{ fontFamily: "monospace", fontSize: 10, color: "#999", letterSpacing: 1 }}>
+          {loading ? "LOADING..." : `${items.length} MARKER${items.length !== 1 ? "S" : ""}`}
+        </div>
+      </div>
+
+      {/* ── Global Settings ── */}
+      <div style={{ border: "2px solid #000", padding: 20, marginBottom: 28, background: "#fff" }}>
+        <div style={{ fontSize: 10, letterSpacing: 2, color: "#dc2626", fontWeight: 700, marginBottom: 12 }}>
+          ● GLOBAL SETTINGS — APPLIES TO ALL MARKERS
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 12 }}>
           <div style={{ flex: 1 }}>
-            <Field label="Scan Radius Threshold (in meters)">
+            <Field label="Scan Radius Threshold (meters)">
               <input
                 type="number"
                 style={ui.input}
@@ -220,18 +232,22 @@ export default function AdminQRcodeMarkerPage() {
               />
             </Field>
           </div>
-          <div style={{ marginBottom: "14px" }}>
+          <div style={{ marginBottom: 14 }}>
             <button style={ui.btnPrimary} onClick={handleSaveConfig} disabled={savingConfig}>
-              {savingConfig ? "Saving…" : "Save Radius"}
+              {savingConfig ? "SAVING..." : "SAVE RADIUS"}
             </button>
           </div>
         </div>
-      </section>
+      </div>
 
-      <main style={ui.mainGrid}>
+      {/* ── Main Grid ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+
         {/* ── Form ── */}
-        <section style={ui.card}>
-          <h2 style={ui.cardTitle}>{isEditMode ? "Edit Marker" : "Add New Marker"}</h2>
+        <div style={{ border: "2px solid #000", padding: 24, background: "#fff" }}>
+          <div style={{ fontSize: 10, letterSpacing: 2, color: "#dc2626", fontWeight: 700, marginBottom: 16, borderBottom: "1.5px solid #000", paddingBottom: 10 }}>
+            ● {isEditMode ? "EDITING MARKER" : "ADD NEW MARKER"}
+          </div>
 
           <Field label="Name *">
             <input style={ui.input} value={form.name} onChange={set("name")} placeholder="e.g. Checkpoint A" />
@@ -242,12 +258,12 @@ export default function AdminQRcodeMarkerPage() {
           </Field>
 
           {form.qrCodeId.trim() && (
-            <div style={{ textAlign: "center", marginBottom: 14 }}>
-              <p style={{ fontSize: "0.75rem", color: "#888", marginBottom: 6 }}>QR Preview</p>
+            <div style={{ textAlign: "center", marginBottom: 14, padding: "12px 0", borderTop: "1px solid #e5e5e5", borderBottom: "1px solid #e5e5e5" }}>
+              <div style={{ fontSize: 9, letterSpacing: 2, color: "#999", marginBottom: 8 }}>QR PREVIEW</div>
               <img
                 src={getQRUrl(form.qrCodeId, 120)}
                 alt="QR preview"
-                style={{ border: "1px solid #e2e8f0", borderRadius: 6 }}
+                style={{ border: "2px solid #000" }}
               />
             </div>
           )}
@@ -270,93 +286,128 @@ export default function AdminQRcodeMarkerPage() {
           </Field>
 
           <Field label="Popup Text">
-            <textarea style={{ ...ui.input, height: 72 }} value={form.popupText} onChange={set("popupText")} />
+            <textarea style={{ ...ui.input, height: 72, resize: "vertical" }} value={form.popupText} onChange={set("popupText")} />
           </Field>
 
-          <div style={ui.coordBox}>
-            <button onClick={() => setIsMapFullScreen(true)} style={ui.fullScreenBtn}>
-              📍 Pick Location on Map
+          {/* Coords */}
+          <div style={{ background: "#fafafa", border: "1.5px solid #e5e5e5", padding: 14, marginBottom: 16 }}>
+            <button
+              onClick={() => setIsMapFullScreen(true)}
+              style={{ background: "#000", color: "#fff", border: "none", padding: "8px 16px", cursor: "pointer", fontFamily: "monospace", fontWeight: 700, fontSize: 11, letterSpacing: 1, marginBottom: 10, width: "100%" }}
+            >
+              📍 PICK LOCATION ON MAP
             </button>
-            <div style={ui.formGrid}>
-              <input type="number" style={ui.input} value={form.lat} readOnly placeholder="Lat" />
-              <input type="number" style={ui.input} value={form.lng} readOnly placeholder="Lng" />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <input type="number" style={{ ...ui.input, background: "#f0f0f0", color: "#666" }} value={form.lat} readOnly placeholder="Lat" />
+              <input type="number" style={{ ...ui.input, background: "#f0f0f0", color: "#666" }} value={form.lng} readOnly placeholder="Lng" />
             </div>
           </div>
 
           <div style={{ display: "flex", gap: 8 }}>
             <button style={ui.btnPrimary} onClick={handleSave} disabled={saving}>
-              {saving ? "Saving…" : isEditMode ? "Update Marker" : "Add Marker"}
+              {saving ? "SAVING..." : isEditMode ? "UPDATE MARKER" : "ADD MARKER"}
             </button>
             {isEditMode && (
               <button style={ui.btnSecondary} onClick={() => setForm(EMPTY_FORM(eventId))}>
-                Cancel
+                CANCEL
               </button>
             )}
           </div>
-        </section>
+        </div>
 
         {/* ── List ── */}
-        <section style={ui.card}>
-          <h2 style={ui.cardTitle}>
-            Existing Markers ({loading ? "…" : items.length})
-          </h2>
-          {items.map((item) => (
-            <div key={item.id} style={ui.listItem}>
-              <div>
-                <strong>{item.name}</strong>
-                <div style={ui.listMeta}>
-                  QR: {item.qrCodeId || "—"} · {item.points} pts · ({item.lat.toFixed(4)}, {item.lng.toFixed(4)})
+        <div style={{ border: "2px solid #000", padding: 24, background: "#fff" }}>
+          <div style={{ fontSize: 10, letterSpacing: 2, color: "#dc2626", fontWeight: 700, marginBottom: 16, borderBottom: "1.5px solid #000", paddingBottom: 10 }}>
+            ● EXISTING MARKERS ({loading ? "..." : items.length})
+          </div>
+
+          {!loading && items.length === 0 && (
+            <p style={{ color: "#999", fontSize: 12, letterSpacing: 1 }}>NO MARKERS YET.</p>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            {items.map((item, i) => (
+              <div
+                key={item.id}
+                style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "12px 0",
+                  borderBottom: i < items.length - 1 ? "1.5px solid #e5e5e5" : "none",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: "#000" }}>{item.name}</div>
+                  <div style={{ fontSize: 10, color: "#999", marginTop: 3, letterSpacing: 0.5 }}>
+                    ID: {item.qrCodeId || "—"} &nbsp;·&nbsp;
+                    <span style={{ color: "#dc2626", fontWeight: 700 }}>{item.points} pts</span> &nbsp;·&nbsp;
+                    ({item.lat.toFixed(4)}, {item.lng.toFixed(4)})
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  {item.qrCodeId && (
+                    <button
+                      style={ui.btnQR}
+                      onClick={() => setQrModal({ name: item.name, qrCodeId: item.qrCodeId })}
+                    >
+                      QR
+                    </button>
+                  )}
+                  <button style={ui.btnEdit} onClick={() => handleEdit(item)}>EDIT</button>
+                  <button style={ui.btnDanger} onClick={() => handleDelete(item.id)}>DEL</button>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 6 }}>
-                {item.qrCodeId && (
-                  <button
-                    style={ui.btnQR}
-                    onClick={() => setQrModal({ name: item.name, qrCodeId: item.qrCodeId })}
-                  >
-                    QR
-                  </button>
-                )}
-                <button style={ui.btnEdit} onClick={() => handleEdit(item)}>Edit</button>
-                <button style={ui.btnDanger} onClick={() => handleDelete(item.id)}>Delete</button>
-              </div>
-            </div>
-          ))}
-          {!loading && items.length === 0 && (
-            <p style={{ color: "#999", fontSize: "0.85rem" }}>No markers yet.</p>
-          )}
-        </section>
-      </main>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* ── Full-screen map picker ── */}
       {isMapFullScreen && (
-        <div style={ui.fullScreenOverlay}>
-          <button onClick={() => setIsMapFullScreen(false)} style={ui.closeFullBtn}>
-            ✕ Close
-          </button>
-          <MapPicker
-            mode="draw_point"
-            onLocationSelect={handleMapSelect}
-            boundary={eventAreaBoundary}
-          />
+        <div style={{ position: "fixed", inset: 0, background: "#fff", zIndex: 2000 }}>
+          <div style={{
+            position: "absolute", top: 0, left: 0, right: 0, zIndex: 2001,
+            background: "#000", color: "#fff", padding: "12px 20px",
+            fontFamily: "monospace", fontSize: 11, letterSpacing: 1,
+            borderBottom: "2px solid #dc2626",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <span>📍 DROP A POINT TO SET MARKER COORDINATES</span>
+            <button
+              onClick={() => setIsMapFullScreen(false)}
+              style={{ background: "#dc2626", color: "#fff", border: "none", padding: "6px 16px", cursor: "pointer", fontFamily: "monospace", fontWeight: 700, fontSize: 12 }}
+            >
+              ✕ CLOSE
+            </button>
+          </div>
+          <div style={{ position: "absolute", inset: 0, paddingTop: 46 }}>
+            <MapPicker
+              mode="draw_point"
+              onLocationSelect={handleMapSelect}
+              boundary={eventAreaBoundary}
+            />
+          </div>
         </div>
       )}
 
       {/* ── QR Code Modal ── */}
       {qrModal && (
         <div
-          style={ui.qrOverlay}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center" }}
           onClick={() => setQrModal(null)}
         >
-          <div style={ui.qrBox} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div
+            style={{ background: "#fff", padding: 28, width: 320, border: "2px solid #000", boxShadow: "6px 6px 0px 0px #dc2626" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
               <div>
-                <p style={{ margin: 0, fontWeight: 700, fontSize: "1rem" }}>{qrModal.name}</p>
-                <p style={{ margin: 0, fontSize: "0.78rem", color: "#888" }}>ID: {qrModal.qrCodeId}</p>
+                <div style={{ fontSize: 9, letterSpacing: 2, color: "#dc2626", fontWeight: 700, marginBottom: 4 }}>QR CODE</div>
+                <div style={{ fontWeight: 900, fontSize: 15, color: "#000" }}>{qrModal.name}</div>
+                <div style={{ fontSize: 10, color: "#999", marginTop: 2 }}>ID: {qrModal.qrCodeId}</div>
               </div>
               <button
                 onClick={() => setQrModal(null)}
-                style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#555" }}
+                style={{ background: "#fff", border: "1.5px solid #000", width: 30, height: 30, cursor: "pointer", fontFamily: "monospace", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}
               >
                 ✕
               </button>
@@ -365,14 +416,14 @@ export default function AdminQRcodeMarkerPage() {
             <img
               src={getQRUrl(qrModal.qrCodeId, 250)}
               alt={`QR code for ${qrModal.qrCodeId}`}
-              style={{ display: "block", margin: "0 auto", borderRadius: 8, border: "1px solid #e2e8f0" }}
+              style={{ display: "block", margin: "0 auto", border: "2px solid #000", width: 250, height: 250 }}
             />
 
             <button
               onClick={() => downloadQR(qrModal.qrCodeId, qrModal.name)}
               style={{ ...ui.btnPrimary, marginTop: 16, width: "100%", textAlign: "center" }}
             >
-              ⬇ Download QR Image
+              ⬇ DOWNLOAD QR IMAGE
             </button>
           </div>
         </div>
@@ -384,33 +435,81 @@ export default function AdminQRcodeMarkerPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <label style={ui.label}>{label}</label>
+      <label style={{ display: "block", fontSize: 9, fontWeight: 700, letterSpacing: 1.5, color: "#666", textTransform: "uppercase", marginBottom: 5, fontFamily: "monospace" }}>
+        {label}
+      </label>
       {children}
     </div>
   );
 }
 
 const ui: Record<string, React.CSSProperties> = {
-  wrapper: { backgroundColor: "#f4f7f9", minHeight: "100vh", padding: "20px", fontFamily: "system-ui" },
-  header: { maxWidth: "1200px", margin: "0 auto 30px auto" },
-  title: { color: "#1a202c" },
-  mainGrid: { maxWidth: "1200px", margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "25px" },
-  card: { background: "#fff", padding: "25px", borderRadius: "12px", boxShadow: "0 4px 6px rgba(0,0,0,0.05)" },
-  cardTitle: { marginBottom: "15px", borderBottom: "1px solid #eee", paddingBottom: 8 },
-  label: { display: "block", fontSize: "0.8rem", fontWeight: "bold", marginBottom: 5, color: "#555" },
-  input: { width: "100%", padding: "9px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box" },
-  formGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "10px" },
-  coordBox: { padding: "12px", background: "#f8f9fa", borderRadius: "8px", marginBottom: "15px" },
-  fullScreenBtn: { background: "#4299e1", color: "white", padding: "8px 12px", borderRadius: "6px", border: "none", cursor: "pointer" },
-  btnPrimary: { flex: 1, background: "#48bb78", color: "white", padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer" },
-  btnSecondary: { background: "#e2e8f0", color: "#333", padding: "10px 16px", borderRadius: "6px", border: "none", cursor: "pointer" },
-  listItem: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #eee" },
-  listMeta: { fontSize: "0.78rem", color: "#888", marginTop: 2 },
-  btnEdit: { background: "#bee3f8", color: "#2b6cb0", padding: "4px 10px", borderRadius: "4px", border: "none", cursor: "pointer" },
-  btnDanger: { background: "#feb2b2", color: "red", padding: "4px 10px", borderRadius: "4px", border: "none", cursor: "pointer" },
-  btnQR: { background: "#fef9c3", color: "#854d0e", padding: "4px 10px", borderRadius: "4px", border: "none", cursor: "pointer", fontWeight: 600 },
-  qrOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center" },
-  qrBox: { background: "#fff", borderRadius: 12, padding: 24, width: 320, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" },
-  fullScreenOverlay: { position: "fixed", inset: 0, background: "white", zIndex: 2000 },
-  closeFullBtn: { position: "absolute", top: 10, right: 10, zIndex: 2001, padding: "10px 16px", background: "#333", color: "white", border: "none", borderRadius: 6, cursor: "pointer" },
+  input: {
+    width: "100%",
+    padding: "9px 12px",
+    border: "1.5px solid #000",
+    boxSizing: "border-box",
+    fontFamily: "monospace",
+    fontSize: 12,
+    background: "#fff",
+    color: "#000",
+    outline: "none",
+    display: "block",
+  },
+  btnPrimary: {
+    flex: 1,
+    background: "#dc2626",
+    color: "#fff",
+    padding: "10px 16px",
+    border: "none",
+    cursor: "pointer",
+    fontFamily: "monospace",
+    fontWeight: 700,
+    fontSize: 11,
+    letterSpacing: 1,
+  },
+  btnSecondary: {
+    background: "#fff",
+    color: "#000",
+    padding: "10px 16px",
+    border: "1.5px solid #000",
+    cursor: "pointer",
+    fontFamily: "monospace",
+    fontWeight: 700,
+    fontSize: 11,
+    letterSpacing: 1,
+  },
+  btnEdit: {
+    background: "#fff",
+    color: "#000",
+    padding: "4px 10px",
+    border: "1.5px solid #000",
+    cursor: "pointer",
+    fontFamily: "monospace",
+    fontWeight: 600,
+    fontSize: 10,
+    letterSpacing: 0.5,
+  },
+  btnDanger: {
+    background: "#fff",
+    color: "#dc2626",
+    padding: "4px 10px",
+    border: "1.5px solid #dc2626",
+    cursor: "pointer",
+    fontFamily: "monospace",
+    fontWeight: 600,
+    fontSize: 10,
+    letterSpacing: 0.5,
+  },
+  btnQR: {
+    background: "#fef2f2",
+    color: "#dc2626",
+    padding: "4px 10px",
+    border: "1.5px solid #dc2626",
+    cursor: "pointer",
+    fontFamily: "monospace",
+    fontWeight: 700,
+    fontSize: 10,
+    letterSpacing: 0.5,
+  },
 };

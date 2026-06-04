@@ -14,10 +14,8 @@ import {
   getDoc,
   setDoc,
 } from "firebase/firestore";
-// 1. ADD IMPORT
 import { useEventId } from "@/app/eventadmin/Eventidcontext";
 
-// --- Types ---
 interface QuizQuestion {
   id: string;
   question: string;
@@ -36,19 +34,17 @@ const EMPTY_FORM: FormState = {
 };
 
 export default function AdminQuiz() {
-  // 2. REPLACE LOCAL STATE
   const { eventId } = useEventId();
-  
+
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
-  // Quiz Config
+
   const [displayCount, setDisplayCount] = useState<number>(5);
   const [timerSeconds, setTimerSeconds] = useState<number>(30);
-  
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -59,25 +55,18 @@ export default function AdminQuiz() {
   const effectiveDisplayCount = Math.min(displayCount, maxAvailable || 5);
 
   const fetchData = useCallback(async () => {
-    if (!eventId) {
-      setQuestions([]);
-      return;
-    }
-    setLoading(true);
+    if (!eventId) { setQuestions([]); return; }
+    setLoading(true); // FIX: removed erroneous `text:` label
     try {
-      // 1. Fetch Questions
       const snap = await getDocs(collection(db, "events", eventId, "quizzes"));
       const loadedQuestions = snap.docs.map(d => ({ id: d.id, ...d.data() } as QuizQuestion));
       setQuestions(loadedQuestions);
 
-      // 2. Fetch Config
       const configRef = doc(db, "events", eventId, "configs", "quiz");
       const configSnap = await getDoc(configRef);
       if (configSnap.exists()) {
-        const savedCount = configSnap.data().displayCount || 5;
-        const savedTimer = configSnap.data().timerSeconds || 30;
-        setDisplayCount(savedCount);
-        setTimerSeconds(savedTimer);
+        setDisplayCount(configSnap.data().displayCount || 5);
+        setTimerSeconds(configSnap.data().timerSeconds || 30);
       }
     } catch (e: any) {
       setError(`Load failed: ${e.message}`);
@@ -86,15 +75,10 @@ export default function AdminQuiz() {
     }
   }, [eventId]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleSaveConfig = async () => {
-    if (!eventId) {
-      setError("Please select an event first.");
-      return;
-    }
+    if (!eventId) { setError("Please select an event first."); return; }
     try {
       await setDoc(doc(db, "events", eventId, "configs", "quiz"), {
         displayCount: Number(displayCount),
@@ -102,16 +86,11 @@ export default function AdminQuiz() {
         updatedAt: new Date().toISOString()
       }, { merge: true });
       showSuccess(`Config updated: ${displayCount} questions and ${timerSeconds}s timer.`);
-    } catch (e: any) {
-      setError(e.message);
-    }
+    } catch (e: any) { setError(e.message); }
   };
 
   const handleSaveQuestion = async () => {
-    if (!form.question || !form.correctAnswer) {
-      setError("Question and Correct Answer are required.");
-      return;
-    }
+    if (!form.question || !form.correctAnswer) { setError("Question and Correct Answer are required."); return; }
     setSaving(true);
     try {
       const colRef = collection(db, "events", eventId, "quizzes");
@@ -123,11 +102,8 @@ export default function AdminQuiz() {
       setModalOpen(false);
       fetchData();
       showSuccess("Question saved.");
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
-    }
+    } catch (e: any) { setError(e.message); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
@@ -166,94 +142,339 @@ export default function AdminQuiz() {
   };
 
   return (
-    <div style={styles.page}>
-      <header style={styles.header}>
-        <div>
-          <h1 style={styles.title}>🧠 Quiz Admin</h1>
-          <p style={styles.subtitle}>Event: {eventId || "None Selected"}</p>
-        </div>
+    <div className="quiz-admin-container" style={{ background: "#fff", minHeight: "100vh", padding: 28, fontFamily: "monospace", boxSizing: "border-box" }}>
 
-        {/* 3. DELETE THE EVENT ID INPUT BOX */}
+      {/* ── Responsive CSS ── */}
+      <style>{`
+        * { box-sizing: border-box; }
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <button style={styles.bulkBtn} onClick={() => setBulkOpen(true)}>📦 Bulk JSON</button>
-          <button style={styles.addBtn} onClick={() => { setForm(EMPTY_FORM); setEditingId(null); setModalOpen(true); }}>+ New Question</button>
+        /* ── Base touch targets ── */
+        .quiz-btn {
+          min-height: 44px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-family: monospace;
+          font-weight: 700;
+          letter-spacing: 1px;
+        }
+
+        /* ── MOBILE: 767px and below ── */
+        @media (max-width: 767px) {
+          .quiz-admin-container {
+            padding: 14px 12px !important;
+          }
+
+          /* Header */
+          .quiz-header-flex {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 14px !important;
+            padding-bottom: 14px !important;
+            margin-bottom: 18px !important;
+          }
+          .quiz-header-title h1 {
+            font-size: 20px !important;
+          }
+          .quiz-header-buttons {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+            width: 100% !important;
+          }
+          .quiz-header-buttons button {
+            width: 100% !important;
+            min-height: 44px !important;
+            font-size: 10px !important;
+            padding: 0 8px !important;
+          }
+
+          /* Config bar */
+          .quiz-config-box {
+            padding: 14px !important;
+            margin-bottom: 16px !important;
+          }
+          .quiz-config-flex {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 16px !important;
+          }
+          .quiz-config-settings {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            width: 100% !important;
+            gap: 10px !important;
+          }
+          .quiz-config-row {
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+          }
+          .quiz-config-save-btn {
+            width: 100% !important;
+            min-height: 44px !important;
+            font-size: 12px !important;
+          }
+          .quiz-config-stats {
+            flex-direction: row !important;
+            justify-content: space-around !important;
+            border-top: 1.5px solid #e5e5e5;
+            padding-top: 14px;
+          }
+          .quiz-config-stats > div {
+            text-align: center !important;
+          }
+          .quiz-stat-value {
+            font-size: 28px !important;
+          }
+
+          /* ── CARD VIEW replaces table on mobile ── */
+          .quiz-table-wrapper { display: none !important; }
+          .quiz-card-list { display: flex !important; }
+
+          /* Modal */
+          .quiz-modal-overlay {
+            padding: 16px !important;
+            align-items: flex-end !important; /* sheet from bottom */
+          }
+          .quiz-modal-content {
+            padding: 20px 16px 28px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            max-height: 88vh !important;
+            border-radius: 0 !important;
+            box-shadow: 0 -4px 0 0 #dc2626 !important;
+          }
+          .quiz-options-grid {
+            grid-template-columns: 1fr !important;
+            gap: 0 !important;
+          }
+          .quiz-save-btn {
+            min-height: 50px !important;
+            font-size: 13px !important;
+          }
+
+          /* Bulk modal */
+          .quiz-bulk-content {
+            padding: 20px 16px 28px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          .quiz-bulk-textarea {
+            height: 180px !important;
+          }
+        }
+
+        /* ── VERY SMALL: 374px and below ── */
+        @media (max-width: 374px) {
+          .quiz-admin-container {
+            padding: 10px 8px !important;
+          }
+          .quiz-header-title h1 {
+            font-size: 17px !important;
+          }
+          .quiz-header-buttons {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        /* ── DESKTOP: hide card list, show table ── */
+        @media (min-width: 768px) {
+          .quiz-card-list { display: none !important; }
+          .quiz-table-wrapper { display: block !important; }
+          .quiz-modal-overlay { align-items: center !important; }
+        }
+
+        /* Card list base (hidden on desktop) */
+        .quiz-card-list {
+          display: none;
+          flex-direction: column;
+          gap: 10px;
+          margin-top: 0;
+        }
+        .quiz-question-card {
+          border: 1.5px solid #000;
+          padding: 14px;
+          background: #fff;
+        }
+        .quiz-question-card:nth-child(odd) {
+          background: #fafafa;
+        }
+        .quiz-card-answer-badge {
+          display: inline-block;
+          background: #fef2f2;
+          color: #dc2626;
+          border: 1px solid #dc2626;
+          padding: 2px 8px;
+          font-family: monospace;
+          font-size: 10px;
+          font-weight: 700;
+          word-break: break-all;
+        }
+        .quiz-card-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 10px;
+        }
+        .quiz-card-actions button {
+          flex: 1;
+          min-height: 40px;
+          font-family: monospace;
+          font-size: 11px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        /* Input focus */
+        input:focus, textarea:focus, select:focus {
+          outline: 2px solid #dc2626 !important;
+          outline-offset: 1px;
+        }
+      `}</style>
+
+      {/* ── Page Header ── */}
+      <div
+        className="quiz-header-flex"
+        style={{ borderBottom: "3px solid #000", paddingBottom: 16, marginBottom: 28, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}
+      >
+        <div className="quiz-header-title">
+          <div style={{ fontSize: 10, letterSpacing: 3, color: "#dc2626", fontWeight: 700, marginBottom: 4 }}>FOREVENT</div>
+          <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: "#000", letterSpacing: 1 }}>QUIZ ADMIN</h1>
+          <div style={{ fontSize: 10, color: "#999", marginTop: 4, letterSpacing: 0.5 }}>
+            EVENT: <span style={{ color: "#dc2626", fontWeight: 700 }}>{eventId || "NONE SELECTED"}</span>
+          </div>
         </div>
-      </header>
+        <div className="quiz-header-buttons" style={{ display: "flex", gap: 8 }}>
+          <button
+            className="quiz-btn"
+            style={{ background: "#fff", color: "#000", border: "1.5px solid #000", padding: "9px 16px", fontSize: 11, letterSpacing: 1 }}
+            onClick={() => setBulkOpen(true)}
+          >
+            BULK JSON
+          </button>
+          <button
+            className="quiz-btn"
+            style={{ background: "#dc2626", color: "#fff", border: "none", padding: "9px 16px", fontSize: 11, letterSpacing: 1 }}
+            onClick={() => { setForm(EMPTY_FORM); setEditingId(null); setModalOpen(true); }}
+          >
+            + NEW QUESTION
+          </button>
+        </div>
+      </div>
 
       {eventId ? (
         <>
-          <div style={styles.configBar}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 15, flexWrap: 'wrap' }}>
-                <label style={{ fontWeight: 700, fontSize: 13, color: '#475569' }}>QUESTIONS PER QUIZ:</label>
-                <input 
-                  type="number" 
-                  min={1}
-                  max={maxAvailable || 50}
-                  value={displayCount} 
-                  onChange={(e) => setDisplayCount(Number(e.target.value))} 
-                  style={{ ...styles.smallInput, width: 70, fontWeight: 'bold', textAlign: 'center' }}
-                />
-                <label style={{ fontWeight: 700, fontSize: 13, color: '#475569' }}>TIMER (SEC):</label>
-                <input
-                  type="number"
-                  min={5}
-                  max={300}
-                  value={timerSeconds}
-                  onChange={(e) => setTimerSeconds(Number(e.target.value))}
-                  style={{ ...styles.smallInput, width: 70, fontWeight: 'bold', textAlign: 'center' }}
-                />
-                <button style={styles.saveBtn} onClick={handleSaveConfig}>Save Setting</button>
+          {/* ── Config Bar ── */}
+          <div className="quiz-config-box" style={{ border: "2px solid #000", padding: 20, marginBottom: 24, background: "#fff" }}>
+            <div style={{ fontSize: 10, letterSpacing: 2, color: "#dc2626", fontWeight: 700, marginBottom: 14 }}>● QUIZ CONFIGURATION</div>
+            <div className="quiz-config-flex" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+              <div className="quiz-config-settings" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                <label className="quiz-config-row" style={ui.configLabel}>
+                  <span>QUESTIONS PER QUIZ</span>
+                  <input
+                    type="number" min={1} max={maxAvailable || 50}
+                    value={displayCount}
+                    onChange={(e) => setDisplayCount(Number(e.target.value))}
+                    style={ui.smallInput}
+                  />
+                </label>
+                <label className="quiz-config-row" style={ui.configLabel}>
+                  <span>TIMER (SEC)</span>
+                  <input
+                    type="number" min={5} max={300}
+                    value={timerSeconds}
+                    onChange={(e) => setTimerSeconds(Number(e.target.value))}
+                    style={ui.smallInput}
+                  />
+                </label>
+                <button
+                  className="quiz-btn quiz-config-save-btn"
+                  style={{ background: "#000", color: "#fff", border: "none", padding: "8px 16px", fontSize: 11, letterSpacing: 1 }}
+                  onClick={handleSaveConfig}
+                >
+                  SAVE
+                </button>
               </div>
-              
-              <div style={{ display: "flex", gap: 20 }}>
-                <div style={styles.statBox}>
-                    <span style={styles.statLabel}>Available Pool</span>
-                    <span style={styles.statValue}>{maxAvailable}</span>
+              <div className="quiz-config-stats" style={{ display: "flex", gap: 20 }}>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 9, letterSpacing: 1.5, color: "#999", fontWeight: 700 }}>POOL</div>
+                  <div className="quiz-stat-value" style={{ fontSize: 22, fontWeight: 900, color: "#000" }}>{maxAvailable}</div>
                 </div>
-                <div style={styles.statBox}>
-                    <span style={styles.statLabel}>Active Limit</span>
-                    <span style={{...styles.statValue, color: displayCount > maxAvailable ? '#ef4444' : '#10b981'}}>
-                        {effectiveDisplayCount}
-                    </span>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 9, letterSpacing: 1.5, color: "#999", fontWeight: 700 }}>ACTIVE</div>
+                  <div className="quiz-stat-value" style={{ fontSize: 22, fontWeight: 900, color: displayCount > maxAvailable ? "#dc2626" : "#000" }}>
+                    {effectiveDisplayCount}
+                  </div>
                 </div>
               </div>
             </div>
             {displayCount > maxAvailable && maxAvailable > 0 && (
-                <p style={{ color: '#ef4444', fontSize: 11, marginTop: 10, fontWeight: 600 }}>
-                    ⚠️ Warning: Limit higher than available pool.
-                </p>
+              <div style={{ color: "#dc2626", fontSize: 10, marginTop: 10, fontWeight: 700, letterSpacing: 0.5 }}>
+                ⚠ WARNING: LIMIT HIGHER THAN AVAILABLE POOL
+              </div>
             )}
           </div>
 
-          {success && <div style={styles.toastSuccess}>{success}</div>}
-          {error && <div style={styles.toastError}>{error}</div>}
+          {/* ── Toasts ── */}
+          {success && (
+            <div style={{ background: "#000", color: "#fff", padding: "12px 16px", marginBottom: 16, fontFamily: "monospace", fontSize: 11, letterSpacing: 1, fontWeight: 700 }}>
+              ✓ {success}
+            </div>
+          )}
+          {error && (
+            <div style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #dc2626", padding: "12px 16px", marginBottom: 16, fontFamily: "monospace", fontSize: 11, letterSpacing: 0.5, fontWeight: 700 }}>
+              ✕ {error}
+              <button
+                onClick={() => setError(null)}
+                style={{ float: "right", background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: 14, fontWeight: 900, lineHeight: 1 }}
+                aria-label="Dismiss error"
+              >×</button>
+            </div>
+          )}
 
-          <div style={styles.card}>
+          {/* ── DESKTOP TABLE ── */}
+          <div className="quiz-table-wrapper" style={{ border: "2px solid #000", overflow: "hidden" }}>
             {loading ? (
-              <div style={styles.empty}>Fetching data...</div>
+              <div style={{ padding: 48, textAlign: "center", fontFamily: "monospace", fontSize: 12, color: "#999", letterSpacing: 2 }}>FETCHING DATA...</div>
             ) : questions.length === 0 ? (
-              <div style={styles.empty}>No questions found for this event.</div>
+              <div style={{ padding: 48, textAlign: "center", fontFamily: "monospace", fontSize: 12, color: "#999" }}>No questions found for this event.</div>
             ) : (
-              <table style={styles.table}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr>
-                    <th style={styles.th}>Question</th>
-                    <th style={styles.th}>Correct Answer</th>
-                    <th style={styles.th}>Points</th>
-                    <th style={styles.th}>Actions</th>
+                  <tr style={{ background: "#000", color: "#fff" }}>
+                    {["QUESTION", "CORRECT ANSWER", "POINTS", "ACTIONS"].map(h => (
+                      <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontFamily: "monospace", fontSize: 9, fontWeight: 700, letterSpacing: 2 }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {questions.map((q) => (
-                    <tr key={q.id}>
-                      <td style={styles.td}>{q.question}</td>
-                      <td style={styles.td}><span style={styles.badge}>{q.correctAnswer}</span></td>
-                      <td style={styles.td}>{q.points}</td>
-                      <td style={styles.td}>
-                        <button style={styles.editBtn} onClick={() => { setForm(q); setEditingId(q.id); setModalOpen(true); }}>✏️</button>
-                        <button style={styles.deleteBtn} onClick={() => handleDelete(q.id)}>🗑</button>
+                  {questions.map((q, i) => (
+                    <tr key={q.id} style={{ borderBottom: "1.5px solid #e5e5e5", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
+                      <td style={ui.td}>{q.question}</td>
+                      <td style={ui.td}>
+                        <span style={{ display: "inline-block", background: "#fef2f2", color: "#dc2626", border: "1px solid #dc2626", padding: "2px 8px", fontFamily: "monospace", fontSize: 10, fontWeight: 700 }}>
+                          {q.correctAnswer}
+                        </span>
+                      </td>
+                      <td style={{ ...ui.td, fontWeight: 700 }}>{q.points}</td>
+                      <td style={ui.td}>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button
+                            className="quiz-btn"
+                            style={{ background: "#fff", border: "1.5px solid #000", padding: "4px 10px", fontSize: 10, fontWeight: 600 }}
+                            onClick={() => { setForm(q); setEditingId(q.id); setModalOpen(true); }}
+                          >
+                            EDIT
+                          </button>
+                          <button
+                            className="quiz-btn"
+                            style={{ background: "#fff", border: "1.5px solid #dc2626", color: "#dc2626", padding: "4px 10px", fontSize: 10, fontWeight: 600 }}
+                            onClick={() => handleDelete(q.id)}
+                          >
+                            DEL
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -261,75 +482,168 @@ export default function AdminQuiz() {
               </table>
             )}
           </div>
+
+          {/* ── MOBILE CARD LIST ── */}
+          <div className="quiz-card-list">
+            {loading ? (
+              <div style={{ padding: 40, textAlign: "center", fontFamily: "monospace", fontSize: 12, color: "#999", letterSpacing: 2 }}>FETCHING DATA...</div>
+            ) : questions.length === 0 ? (
+              <div style={{ padding: 40, textAlign: "center", fontFamily: "monospace", fontSize: 12, color: "#999" }}>No questions found for this event.</div>
+            ) : (
+              questions.map((q, i) => (
+                <div key={q.id} className="quiz-question-card">
+                  {/* Card header */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8, gap: 8 }}>
+                    <div style={{ fontSize: 9, letterSpacing: 1.5, color: "#999", fontWeight: 700 }}>Q{i + 1}</div>
+                    <div style={{ fontSize: 9, letterSpacing: 1.5, color: "#999", fontWeight: 700 }}>{q.points} PTS</div>
+                  </div>
+                  {/* Question text */}
+                  <div style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 700, color: "#000", marginBottom: 10, lineHeight: 1.5 }}>
+                    {q.question}
+                  </div>
+                  {/* Answer */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 9, letterSpacing: 1.5, color: "#999", fontWeight: 700 }}>ANSWER:</span>
+                    <span className="quiz-card-answer-badge">{q.correctAnswer}</span>
+                  </div>
+                  {/* Options preview */}
+                  {q.options && q.options.length > 0 && (
+                    <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 4 }}>
+                      {q.options.filter(o => o.trim()).map((opt, oi) => (
+                        <span key={oi} style={{
+                          fontSize: 10, fontFamily: "monospace",
+                          padding: "2px 7px",
+                          border: opt === q.correctAnswer ? "1.5px solid #dc2626" : "1px solid #d1d5db",
+                          color: opt === q.correctAnswer ? "#dc2626" : "#555",
+                          background: opt === q.correctAnswer ? "#fef2f2" : "#f9f9f9",
+                          fontWeight: opt === q.correctAnswer ? 700 : 400,
+                        }}>
+                          {opt}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {/* Actions */}
+                  <div className="quiz-card-actions">
+                    <button
+                      style={{ background: "#fff", border: "1.5px solid #000", color: "#000" }}
+                      onClick={() => { setForm(q); setEditingId(q.id); setModalOpen(true); }}
+                    >
+                      EDIT
+                    </button>
+                    <button
+                      style={{ background: "#fff", border: "1.5px solid #dc2626", color: "#dc2626" }}
+                      onClick={() => handleDelete(q.id)}
+                    >
+                      DELETE
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </>
       ) : (
-        <div style={styles.empty}>Please select an event from the sidebar.</div>
+        <div style={{ padding: 60, textAlign: "center", fontFamily: "monospace", fontSize: 12, color: "#999", letterSpacing: 1 }}>
+          Please select an event from the sidebar.
+        </div>
       )}
 
-      {/* Question Modal */}
+      {/* ── Question Modal ── */}
       {modalOpen && (
-        <div style={styles.modalOverlay} onClick={() => setModalOpen(false)}>
-          <div style={styles.modal} onClick={e => e.stopPropagation()}>
-            <h2 style={styles.modalTitle}>{editingId ? "Edit Question" : "New Question"}</h2>
-            
-            <label style={styles.label}>Question Text</label>
-            <textarea 
-              style={styles.input} 
-              value={form.question} 
-              onChange={e => setForm({...form, question: e.target.value})} 
-            />
-
-            <div style={styles.grid2}>
-               {form.options.map((opt, idx) => (
-                 <div key={idx}>
-                   <label style={styles.label}>Option {idx + 1}</label>
-                   <input 
-                    style={styles.input} 
-                    value={opt} 
-                    onChange={e => {
-                      const newOpts = [...form.options];
-                      newOpts[idx] = e.target.value;
-                      setForm({...form, options: newOpts});
-                    }}
-                   />
-                 </div>
-               ))}
+        <div
+          className="quiz-modal-overlay"
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}
+          onClick={() => setModalOpen(false)}
+        >
+          <div
+            className="quiz-modal-content"
+            style={{ background: "#fff", padding: 32, width: "100%", maxWidth: 580, border: "2px solid #000", boxShadow: "6px 6px 0px 0px #dc2626", maxHeight: "90vh", overflowY: "auto" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontSize: 10, letterSpacing: 2, color: "#dc2626", fontWeight: 700 }}>
+                ● {editingId ? "EDIT QUESTION" : "NEW QUESTION"}
+              </div>
+              <button
+                onClick={() => setModalOpen(false)}
+                style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#000", lineHeight: 1, padding: "0 4px", fontWeight: 900 }}
+                aria-label="Close modal"
+              >×</button>
             </div>
 
-            <label style={styles.label}>Correct Answer</label>
-            <select 
-              style={styles.input} 
-              value={form.correctAnswer} 
-              onChange={e => setForm({...form, correctAnswer: e.target.value})}
-            >
-              <option value="">-- Choose Correct Option --</option>
-              {form.options.filter(o => o.trim() !== "").map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
+            <Field label="Question Text">
+              <textarea style={{ ...ui.input, minHeight: 80, resize: "vertical" }} value={form.question} onChange={e => setForm({ ...form, question: e.target.value })} />
+            </Field>
 
-            <div style={styles.modalFooter}>
-              <button style={styles.saveBtn} onClick={handleSaveQuestion} disabled={saving}>
-                {saving ? "Saving..." : "Save to Firestore"}
+            <div className="quiz-options-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {form.options.map((opt, idx) => (
+                <Field key={idx} label={`Option ${idx + 1}`}>
+                  <input style={ui.input} value={opt} onChange={e => {
+                    const newOpts = [...form.options];
+                    newOpts[idx] = e.target.value;
+                    setForm({ ...form, options: newOpts });
+                  }} />
+                </Field>
+              ))}
+            </div>
+
+            <Field label="Correct Answer">
+              <select style={ui.input} value={form.correctAnswer} onChange={e => setForm({ ...form, correctAnswer: e.target.value })}>
+                <option value="">-- Choose Correct Option --</option>
+                {form.options.filter(o => o.trim() !== "").map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </Field>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+              <button
+                className="quiz-btn quiz-save-btn"
+                style={{ background: "#dc2626", color: "#fff", border: "none", padding: "11px 24px", fontSize: 11, letterSpacing: 1, opacity: saving ? 0.7 : 1, width: "100%", textAlign: "center", cursor: saving ? "not-allowed" : "pointer" }}
+                onClick={handleSaveQuestion}
+                disabled={saving}
+              >
+                {saving ? "SAVING..." : "SAVE TO FIRESTORE"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Bulk Modal */}
+      {/* ── Bulk Modal ── */}
       {bulkOpen && (
-        <div style={styles.modalOverlay} onClick={() => setBulkOpen(false)}>
-          <div style={styles.modal} onClick={e => e.stopPropagation()}>
-            <h2 style={styles.modalTitle}>Bulk Upload JSON</h2>
-            <textarea 
-              style={{...styles.input, height: 250, fontFamily: 'monospace', fontSize: 12}} 
-              value={jsonText} 
+        <div
+          className="quiz-modal-overlay"
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}
+          onClick={() => setBulkOpen(false)}
+        >
+          <div
+            className="quiz-bulk-content quiz-modal-content"
+            style={{ background: "#fff", padding: 32, width: "100%", maxWidth: 580, border: "2px solid #000", boxShadow: "6px 6px 0px 0px #dc2626" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontSize: 10, letterSpacing: 2, color: "#dc2626", fontWeight: 700 }}>● BULK UPLOAD JSON</div>
+              <button
+                onClick={() => setBulkOpen(false)}
+                style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#000", lineHeight: 1, padding: "0 4px", fontWeight: 900 }}
+                aria-label="Close modal"
+              >×</button>
+            </div>
+            <textarea
+              className="quiz-bulk-textarea"
+              style={{ ...ui.input, height: 240, fontFamily: "monospace", fontSize: 11, resize: "vertical" }}
+              value={jsonText}
               onChange={e => setJsonText(e.target.value)}
               placeholder='[{"question": "Example?", "options": ["A","B"], "correctAnswer": "A"}]'
             />
-            <button style={{...styles.saveBtn, width: '100%', marginTop: 10}} onClick={handleBulkUpload}>
-                Commit Batch to Event {eventId}
+            <button
+              className="quiz-btn"
+              style={{ background: "#dc2626", color: "#fff", border: "none", padding: "12px 0", width: "100%", marginTop: 10, fontSize: 11, letterSpacing: 1, minHeight: 48 }}
+              onClick={handleBulkUpload}
+            >
+              COMMIT BATCH TO EVENT {eventId}
             </button>
           </div>
         </div>
@@ -338,34 +652,58 @@ export default function AdminQuiz() {
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  page: { minHeight: "100vh", background: "#f8fafc", padding: "40px 20px", fontFamily: "Inter, sans-serif" },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 30 },
-  title: { fontSize: 28, fontWeight: 800, color: '#1e293b', margin: 0 },
-  subtitle: { fontSize: 14, color: "#64748b", marginTop: 4 },
-  smallInput: { border: "1px solid #cbd5e1", padding: "8px 12px", borderRadius: 8, width: 120, outline: 'none' },
-  configBar: { background: "#fff", padding: "20px 24px", borderRadius: 16, marginBottom: 24, boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", border: '1px solid #f1f5f9' },
-  statBox: { textAlign: 'right', display: 'flex', flexDirection: 'column' },
-  statLabel: { fontSize: 10, fontWeight: 700, color: '#94a3b8' },
-  statValue: { fontSize: 20, fontWeight: 800, color: '#1e293b' },
-  card: { background: "#fff", borderRadius: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", overflow: "hidden", border: '1px solid #e2e8f0' },
-  table: { width: "100%", borderCollapse: "collapse" },
-  th: { padding: "16px", textAlign: "left", fontSize: 11, fontWeight: 800, color: "#64748b", borderBottom: "2px solid #f1f5f9", background: "#f8fafc", textTransform: 'uppercase' },
-  td: { padding: "16px", borderBottom: "1px solid #f1f5f9", fontSize: 14, color: '#334155' },
-  badge: { background: "#f0fdf4", color: "#166534", padding: "4px 10px", borderRadius: 6, fontWeight: 700, fontSize: 12, border: '1px solid #bbf7d0' },
-  addBtn: { background: "#3b82f6", color: "#fff", border: "none", borderRadius: 10, padding: "12px 24px", cursor: "pointer", fontWeight: 700 },
-  bulkBtn: { background: "#0f172a", color: "#fff", border: "none", borderRadius: 10, padding: "12px 24px", cursor: "pointer", fontWeight: 700 },
-  editBtn: { background: "#f1f5f9", border: "none", cursor: "pointer", marginRight: 8, padding: '6px', borderRadius: 6 },
-  deleteBtn: { background: "#fef2f2", border: "none", cursor: "pointer", padding: '6px', borderRadius: 6 },
-  modalOverlay: { position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: 'blur(4px)' },
-  modal: { background: "#fff", borderRadius: 20, padding: 32, width: "100%", maxWidth: 600 },
-  modalTitle: { fontSize: 22, fontWeight: 800, marginBottom: 20, color: '#0f172a' },
-  input: { padding: "12px", borderRadius: 10, border: "1px solid #e2e8f0", width: "100%", marginBottom: 16, outline: 'none', fontSize: 14 },
-  label: { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 6, color: '#475569' },
-  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 },
-  modalFooter: { display: "flex", justifyContent: "flex-end", marginTop: 10 },
-  saveBtn: { padding: "10px 20px", borderRadius: 10, border: "none", background: "#3b82f6", color: "#fff", cursor: "pointer", fontWeight: 700 },
-  toastSuccess: { background: "#10b981", color: "#fff", padding: "14px 20px", borderRadius: 12, marginBottom: 20, fontWeight: 600, fontSize: 14 },
-  toastError: { background: "#ef4444", color: "#fff", padding: "14px 20px", borderRadius: 12, marginBottom: 20, fontWeight: 600, fontSize: 14 },
-  empty: { padding: 60, textAlign: "center", color: "#94a3b8", fontWeight: 500 }
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ display: "block", fontSize: 9, fontWeight: 700, letterSpacing: 1.5, color: "#666", textTransform: "uppercase", marginBottom: 5, fontFamily: "monospace" }}>
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const ui: Record<string, React.CSSProperties> = {
+  input: {
+    padding: "9px 12px",
+    border: "1.5px solid #000",
+    width: "100%",
+    boxSizing: "border-box",
+    fontFamily: "monospace",
+    fontSize: 12,
+    background: "#fff",
+    color: "#000",
+    outline: "none",
+    display: "block",
+    marginBottom: 0,
+  },
+  td: {
+    padding: "12px 14px",
+    fontFamily: "monospace",
+    fontSize: 12,
+    color: "#000",
+    verticalAlign: "middle",
+  },
+  configLabel: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 6,
+    fontSize: 9,
+    fontWeight: 700,
+    letterSpacing: 1.5,
+    color: "#666",
+  },
+  smallInput: {
+    border: "1.5px solid #000",
+    padding: "7px 10px",
+    width: 70,
+    fontFamily: "monospace",
+    fontWeight: 700,
+    fontSize: 13,
+    textAlign: "center" as const,
+    outline: "none",
+    background: "#fff",
+    color: "#000",
+    boxSizing: "border-box" as const,
+  },
 };
