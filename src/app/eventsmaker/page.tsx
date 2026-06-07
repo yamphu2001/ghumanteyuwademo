@@ -139,15 +139,19 @@ export default function EventPage() {
             <OfflineSync eventId={selectedEvent.id} />
 
             <button
-              onClick={() => isNear(selectedEvent.coords, selectedEvent.radius) && router.push(selectedEvent.launchPath)}
-              disabled={!isNear(selectedEvent.coords, selectedEvent.radius)}
-              className={`w-full py-3.5 rounded-xl font-semibold transition-all duration-300
-                ${isNear(selectedEvent.coords, selectedEvent.radius)
-                  ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-600/10'
-                  : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'}`}
-            >
-              {isNear(selectedEvent.coords, selectedEvent.radius) ? "Enter Event" : "Location Locked"}
-            </button>
+  onClick={() => isNear(selectedEvent.coords, selectedEvent.radius) && router.push(selectedEvent.launchPath)}
+  disabled={!isNear(selectedEvent.coords, selectedEvent.radius)}
+  className={`w-full py-3.5 font-semibold uppercase tracking-wider transition-all duration-150
+    ${isNear(selectedEvent.coords, selectedEvent.radius)
+      ? 'bg-red-600 text-white border-2 border-[#111827] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none'
+      : 'bg-zinc-100 text-zinc-400 border-2 border-zinc-300 cursor-not-allowed'}`}
+  style={{
+    borderRadius: "0px",
+    boxShadow: isNear(selectedEvent.coords, selectedEvent.radius) ? "4px 4px 0px #111827" : "none",
+  }}
+>
+  {isNear(selectedEvent.coords, selectedEvent.radius) ? "Enter Event" : "Location Locked"}
+</button>
 
             {!isNear(selectedEvent.coords, selectedEvent.radius) && (
               <p className="text-xs text-center mt-4 text-gray-400">

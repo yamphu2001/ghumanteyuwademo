@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -18,8 +20,31 @@ function PlayPageInner({
   user: User;
 }) {
   const hasLoggedLanding = useRef(false);
+  const router = useRouter();
+  const [finishChecked, setFinishChecked] = useState(false); // ← gate until check resolves
+  const [alreadyFinished, setAlreadyFinished] = useState(false);
+
+  // ✅ Check if player already reached finish — redirect if so
+  useEffect(() => {
+    const checkFinish = async () => {
+      try {
+        const { hasPlayerFinished } = await import("./_checkFinished");
+        const finished = await hasPlayerFinished(eventId, user.uid);
+        if (finished) {
+          setAlreadyFinished(true);
+          router.replace(`/eventsmaker/${eventId}/finish`);
+        } else {
+          setFinishChecked(true);
+        }
+      } catch {
+        setFinishChecked(true); // on error, let them through
+      }
+    };
+    checkFinish();
+  }, [eventId, user.uid, router]);
 
   useEffect(() => {
+    if (!finishChecked) return; // don't run startat until finish check passes
     if (hasLoggedLanding.current) return;
     hasLoggedLanding.current = true;
 
@@ -36,7 +61,6 @@ function PlayPageInner({
       try {
         console.log("[PlayPage] Triggering persistStartAt...");
         const { persistStartAt } = await import("./_persistStartAt");
-
         await persistStartAt(eventId, user.uid, humanReadableTime);
         localStorage.setItem(key, humanReadableTime);
         console.log("[PlayPage] Process complete.");
@@ -46,7 +70,21 @@ function PlayPageInner({
     };
 
     writeStartAt();
-  }, [eventId, user.uid]);
+  }, [eventId, user.uid, finishChecked]);
+
+  // Show spinner while checking finish status or during redirect
+  if (!finishChecked || alreadyFinished) {
+    return (
+      <div className="flex items-center justify-center w-screen h-screen bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#dc2626] border-t-transparent rounded-full animate-spin" />
+          <p className="text-black text-xs font-bold tracking-[0.2em] uppercase">
+            {alreadyFinished ? "Returning to Finish Line..." : "Entering Map Arena..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-white text-black">
@@ -59,7 +97,6 @@ export default function PlayPage() {
   const params = useParams();
   const router = useRouter();
 
-  // Safely grab the eventId string when Next.js populates it
   const eventId =
     typeof params?.eventId === "string" ? params.eventId : undefined;
 
@@ -84,7 +121,6 @@ export default function PlayPage() {
     }
   }, [authChecked, user, router]);
 
-  // 🌟 FIX: If params are still hydrating (!eventId), keep showing the clean spinner
   if (loading || !user || !eventId) {
     return (
       <div className="flex items-center justify-center w-screen h-screen bg-white">
@@ -98,6 +134,5 @@ export default function PlayPage() {
     );
   }
 
-  // Once both User and EventId are fully locked and loaded, mount the play area!
   return <PlayPageInner eventId={eventId} user={user} />;
 }

@@ -3,15 +3,14 @@
 
 import { useEffect } from "react";
 import { useGoogleAuth } from "./logic";
-import { auth } from "@/lib/firebase"; // 🟢 Import auth directly
-import { signOut } from "firebase/auth"; // 🟢 Import standard signOut
+import { auth } from "@/lib/firebase"; 
+import { signOut } from "firebase/auth"; 
 
 export default function LoginPage() {
   const { signIn, loading } = useGoogleAuth();
 
   useEffect(() => {
-    // 🟢 SAFE CLEANUP: Kill the dirty background queues and revoke the token,
-    // but leave the Firestore engine alive so the login script can use it!
+   
     if (typeof window !== "undefined") {
       localStorage.clear(); 
       console.log("[Login Guard] Storage queues cleared safely.");
@@ -35,17 +34,21 @@ export default function LoginPage() {
           Continue your journey and collect more rewards.
         </p>
         
-        <button
-          onClick={signIn}
-          disabled={loading}
-          className={`w-full py-4 rounded-full text-white font-bold text-lg transition shadow-lg ${
-            loading 
-              ? "bg-gray-400 cursor-not-allowed" 
-              : "bg-[#E13746] hover:bg-[#c92f3d] active:scale-95"
-          }`}
-        >
-          {loading ? "Signing in..." : "Sign in with Google"}
-        </button>
+       <button
+  onClick={signIn}
+  disabled={loading}
+  className={`w-full py-4 text-white font-bold text-lg uppercase tracking-wider transition-all ${
+    loading
+      ? "bg-gray-400 cursor-not-allowed border-2 border-gray-400"
+      : "bg-[#E13746] border-2 border-[#111827] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+  }`}
+  style={{
+    borderRadius: "0px",
+    boxShadow: loading ? "none" : "4px 4px 0px #111827",
+  }}
+>
+  {loading ? "Signing in..." : "Sign in with Google"}
+</button>
 
         <p className="mt-8 text-xs text-gray-400">
           © 2026 Ghumante Yuwa | Privacy Policy | Terms

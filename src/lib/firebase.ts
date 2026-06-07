@@ -4,7 +4,7 @@ import { getAuth, signOut as firebaseSignOut } from "firebase/auth";
 import { 
   initializeFirestore, 
   persistentLocalCache, 
-  persistentMultipleTabManager, // 🌟 Added for multi-tab/HMR safety
+  persistentMultipleTabManager, 
   terminate, 
   clearIndexedDbPersistence, 
   getFirestore 

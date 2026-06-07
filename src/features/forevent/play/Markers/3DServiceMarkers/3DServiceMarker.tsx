@@ -22,23 +22,22 @@ interface ServiceConfig {
   height?: number;
 }
 
-// --- POPUP BUILDER HELPER ---
 function buildPopupNode(config: ServiceConfig): HTMLElement {
   const popupNode = document.createElement('div');
   popupNode.style.width = "100%";
-  popupNode.style.maxWidth = "450px"; 
+  popupNode.style.maxWidth = "450px";
   popupNode.style.fontFamily = "Inter, system-ui, sans-serif";
-  
+
   popupNode.innerHTML = `
-    <div style="background: #ffffff; color: #000000; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid rgba(0,0,0,0.05); margin: 0 10px;">
+    <div style="background: #ffffff; color: #000000; overflow: hidden; border: 2px solid #111827; box-shadow: 6px 6px 0px #ff0000; margin: 0 10px;">
       ${config.popupImage
-      ? `<img src="${config.popupImage}" style="width:100%; height: auto; max-height: 35vh; object-fit:cover; display:block;" onerror="this.style.display='none'" />`
-      : `<div style="width:100%; height: 8px; background: ${config.color || '#dc2626'};"></div>`
-    }
+        ? `<img src="${config.popupImage}" style="width:100%; height: auto; max-height: 35vh; object-fit:cover; display:block; border-bottom: 2px solid #111827;" onerror="this.style.display='none'" />`
+        : `<div style="width:100%; height: 6px; background: ${config.color || '#dc2626'}; border-bottom: 2px solid #111827;"></div>`
+      }
       <div style="padding: 16px; display:flex; flex-direction:column; gap: 10px;">
         <div style="display:flex; align-items:center; gap: 8px;">
-          <span style="display:inline-block;width:8px;height:8px;background:${config.color || '#dc2626'};border-radius:50%;"></span>
-          <strong style="font-size: 16px; color: #000000; line-height:1.2;">${config.name}</strong>
+          <span style="display:inline-block;width:8px;height:8px;background:${config.color || '#dc2626'};border-radius:0px;"></span>
+          <strong style="font-size: 16px; color: #000000; line-height:1.2; text-transform: uppercase; letter-spacing: 0.05em;">${config.name}</strong>
         </div>
         ${config.text ? `<p style="margin:0; color:#444; font-size:13px; line-height:1.5; max-height: 120px; overflow-y: auto;">${config.text}</p>` : ''}
       </div>
@@ -88,20 +87,21 @@ function SingleBoundary({ map, config }: { map: maplibregl.Map; config: ServiceC
       const closeBtn = document.createElement('button');
       closeBtn.textContent = '✕';
       closeBtn.style.position = 'absolute';
-      closeBtn.style.top = '-10px';
-      closeBtn.style.right = '0px';
-      closeBtn.style.background = '#fff';
-      closeBtn.style.color = '#000';
-      closeBtn.style.border = 'none';
-      closeBtn.style.borderRadius = '50%';
-      closeBtn.style.width = '36px';
-      closeBtn.style.height = '36px';
+      closeBtn.style.top = '-14px';
+      closeBtn.style.right = '-4px';
+      closeBtn.style.background = '#E13746';
+      closeBtn.style.color = '#fff';
+      closeBtn.style.border = '2px solid #111827';
+      closeBtn.style.borderRadius = '0px';
+      closeBtn.style.width = '32px';
+      closeBtn.style.height = '32px';
       closeBtn.style.cursor = 'pointer';
-      closeBtn.style.fontSize = '16px';
+      closeBtn.style.fontSize = '14px';
+      closeBtn.style.fontWeight = '700';
       closeBtn.style.display = 'flex';
       closeBtn.style.alignItems = 'center';
       closeBtn.style.justifyContent = 'center';
-      closeBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+      closeBtn.style.boxShadow = '3px 3px 0px #111827';
       closeBtn.style.zIndex = '10061';
 
       content.appendChild(closeBtn);
@@ -112,9 +112,9 @@ function SingleBoundary({ map, config }: { map: maplibregl.Map; config: ServiceC
         if (ev.target === bodyPopup) removeCurrentPopup();
       });
 
-      closeBtn.addEventListener('click', (ev) => { 
-        ev.stopPropagation(); 
-        removeCurrentPopup(); 
+      closeBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        removeCurrentPopup();
       });
 
       popupRef.current = bodyPopup;
@@ -178,7 +178,7 @@ function SingleBoundary({ map, config }: { map: maplibregl.Map; config: ServiceC
     const center: [number, number] = [lngSum / centerCount, latSum / centerCount];
 
     const hasImage = config.markerImage && config.markerImage.trim() !== "" && config.markerImage !== "null";
-    
+
     let topMarkerEl: HTMLDivElement | null = null;
     let topUpdate: (() => void) | null = null;
 
@@ -199,7 +199,7 @@ function SingleBoundary({ map, config }: { map: maplibregl.Map; config: ServiceC
             </div>
             <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid ${config.color || '#3b82f6'};margin-top:-3px;"></div>
           </div>`;
-        
+
         container.appendChild(topMarkerEl);
 
         topUpdate = () => {
@@ -212,12 +212,12 @@ function SingleBoundary({ map, config }: { map: maplibregl.Map; config: ServiceC
             const p = map.project([center[0], center[1]]);
             const metersPerPixel = 156543.03392 * Math.cos(center[1] * Math.PI / 180) / Math.pow(2, map.getZoom());
             const pxHeight = (config.height || 0) / metersPerPixel;
-            
+
             topMarkerEl.style.display = 'block';
             topMarkerEl.style.left = Math.round(p.x) + 'px';
             topMarkerEl.style.top = Math.round(p.y - pxHeight) + 'px';
             topMarkerEl.style.transform = 'translate(-50%, -50%)';
-          } catch (e) {}
+          } catch (e) { }
         };
         map.on('move', topUpdate);
         map.on('resize', topUpdate);
@@ -276,7 +276,7 @@ function SinglePointMarker({ map, config }: { map: maplibregl.Map; config: Servi
 
   useEffect(() => {
     if (!map || !config.boundary || config.boundary.length === 0) return;
-    
+
     const hasImage = config.markerImage && config.markerImage.trim() !== "" && config.markerImage !== "null";
     if (!hasImage) return;
 
@@ -287,7 +287,7 @@ function SinglePointMarker({ map, config }: { map: maplibregl.Map; config: Servi
 
     const removeCurrentPopup = () => {
       if (popupRef.current) {
-        try { if (document.body.contains(popupRef.current)) document.body.removeChild(popupRef.current); } catch(e) {}
+        try { if (document.body.contains(popupRef.current)) document.body.removeChild(popupRef.current); } catch (e) { }
         popupRef.current = null;
       }
     };
@@ -310,7 +310,7 @@ function SinglePointMarker({ map, config }: { map: maplibregl.Map; config: Servi
       bodyPopup.style.padding = '16px';
       bodyPopup.style.background = 'rgba(0, 0, 0, 0.7)';
       bodyPopup.style.zIndex = '10060';
-      
+
       const content = buildPopupNode(config);
       content.style.position = 'relative';
 
@@ -326,13 +326,13 @@ function SinglePointMarker({ map, config }: { map: maplibregl.Map; config: Servi
       closeBtn.style.height = '36px';
       closeBtn.style.cursor = 'pointer';
       closeBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
-      
+
       content.appendChild(closeBtn);
       bodyPopup.appendChild(content);
       document.body.appendChild(bodyPopup);
       popupRef.current = bodyPopup;
       closeBtn.onclick = removeCurrentPopup;
-      bodyPopup.onclick = (e) => { if(e.target === bodyPopup) removeCurrentPopup(); };
+      bodyPopup.onclick = (e) => { if (e.target === bodyPopup) removeCurrentPopup(); };
     });
 
     markerRef.current = new maplibregl.Marker({ element: el, anchor: 'bottom' as any }).setLngLat(center).addTo(map);
@@ -385,7 +385,7 @@ export default function ServiceMarkers({ map, eventId }: { map: any; eventId: st
         }
       });
       setServices(list);
-      localforage.setItem(cacheKey, list).catch(() => {});
+      localforage.setItem(cacheKey, list).catch(() => { });
     }, (err) => {
       // Snapshot failed (network blip after going online) — fall back to cache
       if (err?.code === "unavailable" || err?.message?.includes("Could not reach Cloud Firestore backend")) {

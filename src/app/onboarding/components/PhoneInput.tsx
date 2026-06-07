@@ -38,7 +38,7 @@ export const PhoneInput = ({ value, onChange, showError = false }: PhoneInputPro
           fontWeight: 600,
           letterSpacing: "0.08em",
           textTransform: "uppercase",
-          color: "#6b7280",
+          color: "black",
           marginBottom: "10px",
         }}
       >
@@ -66,8 +66,8 @@ export const PhoneInput = ({ value, onChange, showError = false }: PhoneInputPro
             flexShrink: 0,
           }}
         >
-          <span style={{ fontSize: "16px", lineHeight: 1 }}>🇳🇵</span>
-          <span style={{ fontSize: "13px", fontWeight: 500, color: "#374151" }}>
+          <span style={{ fontSize: "16px", lineHeight: 1, color: "black"}}>🇳🇵</span>
+          <span style={{ fontSize: "13px", fontWeight: 500, color: "black" }}>
             +977
           </span>
         </div>
