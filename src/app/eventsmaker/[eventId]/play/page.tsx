@@ -5,7 +5,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { flushQueue } from "@/features/forevent/play/useOfflineQueue";
 import MapContainer from "@/features/forevent/play/MapContainer/MapContainer";
 
@@ -105,15 +106,45 @@ export default function PlayPage() {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
+    let canceled = false;
+
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        if (!canceled) {
+          setLoading(false);
+          setAuthChecked(true);
+        }
+        return;
       }
-      setLoading(false);
-      setAuthChecked(true);
+
+      if (!eventId) {
+        router.replace("/eventsmaker");
+        return;
+      }
+
+      try {
+        const eventDoc = await getDoc(doc(db, "events", eventId));
+        if (!eventDoc.exists()) {
+          router.replace("/eventsmaker");
+          return;
+        }
+
+        if (!canceled) {
+          setUser(currentUser);
+          setLoading(false);
+          setAuthChecked(true);
+        }
+      } catch (error) {
+        console.error("[PlayPage] Event validation error:", error);
+        router.replace("/eventsmaker");
+      }
     });
-    return () => unsubscribe();
-  }, [router]);
+
+    return () => {
+      canceled = true;
+      unsubscribe();
+    };
+  }, [eventId, router]);
 
   useEffect(() => {
     if (authChecked && !user) {

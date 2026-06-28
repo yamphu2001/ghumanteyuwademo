@@ -42,7 +42,7 @@ export default function AdminQuiz() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const [displayCount, setDisplayCount] = useState<number>(5);
+  const [displayCount, setDisplayCount] = useState<number>(1);
   const [timerSeconds, setTimerSeconds] = useState<number>(30);
 
   const [modalOpen, setModalOpen] = useState(false);

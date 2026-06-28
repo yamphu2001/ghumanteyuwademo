@@ -246,7 +246,7 @@ export default function AdminServiceMarker() {
           </div>
 
           <div className="space-y-4 pt-6 border-t border-gray-200">
-            <button onClick={() => setIsMapFullScreen(true)} className="w-full py-4 border-2 border-black text-black uppercase font-black tracking-widest hover:bg-black hover:text-white transition-colors flex justify-center items-center gap-2">
+            <button onClick={() => setIsMapFullScreen(true)} className="w-full py-4 border-2 border-black text-black uppercase font-black tracking-widest hover:bg-red-600 hover:text-white transition-colors flex justify-center items-center gap-2">
               <span className="text-red-600">📍</span> {selectedBoundary.length > 0 ? "Change Area Shape" : "Draw Area on Map"}
             </button>
             <div className="flex gap-4">
@@ -302,8 +302,8 @@ export default function AdminServiceMarker() {
               </div>
             </div>
             <div className="flex gap-3 md:opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => handleDuplicate(service)} className="px-4 py-2 bg-white border border-black text-black text-xs font-black tracking-widest uppercase hover:bg-black hover:text-white transition-colors">Duplicate</button>
-              <button onClick={() => handleEdit(service)} className="px-4 py-2 bg-white border border-black text-black text-xs font-black tracking-widest uppercase hover:bg-black hover:text-white transition-colors">Edit</button>
+              <button onClick={() => handleDuplicate(service)} className="px-4 py-2 bg-white border border-black text-black text-xs font-black tracking-widest uppercase hover:bg-red-600 hover:text-white transition-colors">Duplicate</button>
+              <button onClick={() => handleEdit(service)} className="px-4 py-2 bg-white border border-black text-black text-xs font-black tracking-widest uppercase hover:bg-red-600 hover:text-white transition-colors">Edit</button>
               <button onClick={() => handleDelete(service.id)} className="px-4 py-2 bg-white border border-red-600 text-red-600 text-xs font-black tracking-widest uppercase hover:bg-red-600 hover:text-white transition-colors">Delete</button>
             </div>
           </div>

@@ -14,10 +14,14 @@ service cloud.firestore {
     }
 
     // ─── events ───────────────────────────────────────────────────────────────
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
     match /events/{eventId} {
       // Any signed-in user can read the event document (lobby, eventsmaker list).
       allow read: if request.auth != null;
-      // Any signed-in user can write (admin panel has no server-side role guard).
+      // Any signed-in user can write event metadata via the admin UI.
       allow write: if request.auth != null;
 
       // ── boundary ────────────────────────────────────────────────────────────
@@ -75,11 +79,10 @@ service cloud.firestore {
 
       // ── player_log ───────────────────────────────────────────────────────────
       // Leaderboard reads ALL player docs → any signed-in user can read.
-      // Players can only write their own log (startat, qrPoints, quizPoints, etc.).
-      // finish/page.tsx also writes totalTime + rank to the owner's doc → owner write covers it.
+      // Players can write their own log, and admin users can update verification/prize state.
       match /player_log/{uid} {
         allow read:  if request.auth != null;
-        allow write: if request.auth != null && request.auth.uid == uid;
+        allow write: if request.auth != null && (request.auth.uid == uid || isAdmin());
       }
     }
 

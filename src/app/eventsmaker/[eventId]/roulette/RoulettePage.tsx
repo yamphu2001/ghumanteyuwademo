@@ -45,7 +45,7 @@ function RouletteWheel({
   controls: ReturnType<typeof useAnimation>;
 }) {
   const [size, setSize] = useState(320);
-  
+
   useEffect(() => {
     const handleResize = () => {
       const newSize = window.innerWidth < 400 ? 280 : 320;
@@ -83,11 +83,11 @@ function RouletteWheel({
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="drop-shadow-xl">
         <circle cx={cx} cy={cy} r={r} fill="white" stroke="black" strokeWidth={4} />
         {prizes.map((prize, i) => (
-          <path 
-            key={prize.id || i} 
-            d={slicePath(i)} 
-            fill={prize.color || "#000000"} 
-            stroke="white" 
+          <path
+            key={prize.id || i}
+            d={slicePath(i)}
+            fill={prize.color || "#000000"}
+            stroke="white"
             strokeWidth={1}
           />
         ))}
@@ -95,8 +95,8 @@ function RouletteWheel({
           const pos = imagePos(i);
           const imgSize = Math.min(r * 0.55, (2 * Math.PI * r * 0.75) / n - 6);
           return (
-            <g key={`img-group-${prize.id || i}`} transform={`rotate(${(i + 0.5) * (360/n)}, ${pos.x}, ${pos.y})`}>
-               <image
+            <g key={`img-group-${prize.id || i}`} transform={`rotate(${(i + 0.5) * (360 / n)}, ${pos.x}, ${pos.y})`}>
+              <image
                 href={prize.imageUrl}
                 x={pos.x - imgSize / 2}
                 y={pos.y - imgSize / 2}
@@ -119,9 +119,31 @@ function RouletteWheel({
 export default function PlayerRoulettePage({ eventId: propEventId, onClose }: RoulettePageProps) {
   const params = useParams();
   const router = useRouter();
-  
+
   const eventId = propEventId || (params?.eventId as string);
-  
+  const rouletteEntryKey = `rouletteAccess:${eventId}`;
+
+  const isRouletteAccessValid = () => {
+    if (typeof window === "undefined" || !eventId) return false;
+    const raw = window.sessionStorage.getItem(rouletteEntryKey);
+    if (!raw) return false;
+    try {
+      const parsed = JSON.parse(raw);
+      return (
+        parsed?.eventId === eventId &&
+        typeof parsed.ts === "number" &&
+        Date.now() - parsed.ts < 10 * 60 * 1000
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  const consumeRouletteAccess = () => {
+    if (typeof window === "undefined" || !eventId) return;
+    window.sessionStorage.removeItem(rouletteEntryKey);
+  };
+
   const [stage, setStage] = useState<"loading" | "no_prize" | "ready" | "result" | "already_spin" | "no_stock">("loading");
   const [user, setUser] = useState<User | null>(null);
   const [prizes, setPrizes] = useState<Prize[]>([]);
@@ -131,16 +153,28 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
 
   useEffect(() => {
     if (!eventId) return;
+    if (!isRouletteAccessValid()) {
+      router.replace(`/eventsmaker/${eventId}/finish`);
+      return;
+    }
+
     let mounted = true;
 
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) { 
-        router.push("/"); 
-        return; 
+      if (!currentUser) {
+        router.push("/");
+        return;
       }
       if (mounted) setUser(currentUser);
+      consumeRouletteAccess();
 
       try {
+        const eventDoc = await getDoc(doc(db, "events", eventId));
+        if (!eventDoc.exists()) {
+          router.replace("/eventsmaker");
+          return;
+        }
+
         // 1. Fetch Wheel Structure from Firestore
         const q = query(collection(db, "events", eventId, "roulette"), orderBy("createdAt", "asc"));
         const snap = await getDocs(q);
@@ -166,7 +200,7 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
         // 🌟 FIXED STRATEGY: Read full session record block to avoid object schema variant omissions
         const progressSnap = await get(ref(rtdb, `eventsProgress/${eventId}/${currentUser.uid}`));
         const progressData = progressSnap.exists() ? progressSnap.val() : {};
-        
+
         const prizeStatus = progressData.prize || progressData.userInfo?.prize || null;
         const quizResult = progressData.quizResult || progressData.userInfo?.quizResult || {};
 
@@ -174,16 +208,18 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
 
         // 🌟 FIXED STRATEGY: Block users if status matches either spin completion OR admin claim
         if (normalizedPrizeStatus === "completed" || normalizedPrizeStatus === "claimed") {
-          // Fetch from Firestore player_log collection to obtain exact prize metadata for fallback screen UI
+          // Clean up the token once the page is authorized
+          consumeRouletteAccess();
+
           const playerLogSnap = await getDoc(doc(db, "events", eventId, "player_log", currentUser.uid));
           const fallbackPrizeName = playerLogSnap.exists() ? playerLogSnap.data()?.roulettePrize : "Claimed";
 
           const matchedPrize = livePrizes.find(p => p.name === fallbackPrizeName) || {
             name: fallbackPrizeName, imageUrl: "", color: "#000000", id: "legacy", remaining: 0,
           };
-          if (mounted) { 
-            setWinner(matchedPrize as Prize); 
-            setStage("already_spin"); 
+          if (mounted) {
+            setWinner(matchedPrize as Prize);
+            setStage("already_spin");
           }
           return;
         }
@@ -222,19 +258,26 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
     if (isSpinning || prizes.length === 0 || stage !== "ready" || !user) return;
     setIsSpinning(true);
 
+    const currentUser = auth.currentUser || user;
+    if (!currentUser) {
+      router.push("/");
+      return;
+    }
+
+    try {
+      await currentUser.getIdToken(true);
+    } catch (tokenError) {
+      console.warn("[Roulette] Failed refreshing auth token:", tokenError);
+      router.push("/login");
+      return;
+    }
+
     try {
       const winIndex = weightedRandom(prizes);
       const wonPrize = prizes[winIndex];
-      const stockRef = ref(rtdb, `rouletteStock/${eventId}/${wonPrize.id}`);
-      
-      const transactionResult = await runTransaction(stockRef, (currentStock) => {
-        if (currentStock === null) return currentStock;
-        if (currentStock.remaining <= 0) return undefined;
-        return { ...currentStock, remaining: currentStock.remaining - 1 };
-      });
 
-      if (!transactionResult.committed) {
-        alert("Prizes just ran out! Refreshing stock values...");
+      if (wonPrize.remaining <= 0) {
+        alert("Prize stock is unavailable. Refreshing stock values...");
         router.refresh();
         return;
       }
@@ -247,6 +290,14 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
       await controls.start({
         rotate: totalRotation,
         transition: { duration: 5, ease: [0.12, 0, 0.02, 1] },
+      });
+
+      // Decrement stock atomically so admin panel reflects the win
+      const prizeStockRef = ref(rtdb, `rouletteStock/${eventId}/${wonPrize.id}`);
+      await runTransaction(prizeStockRef, (current) => {
+        if (current === null) return current;
+        if (current.remaining <= 0) return current;
+        return { ...current, remaining: current.remaining - 1 };
       });
 
       const userProgressRef = ref(rtdb, `eventsProgress/${eventId}/${user.uid}`);
@@ -263,19 +314,23 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
       });
 
       // Route logs directly into existing player_log collection using merge
+      // Route logs directly into existing player_log collection using merge
       await setDoc(
-        doc(db, "events", eventId, "player_log", user.uid), 
+        doc(db, "events", eventId, "player_log", user.uid),
         {
           roulettePrize: wonPrize.name,
           prizeClaim: humanReadableTime,
+          prize: "completed",
         },
-        { merge: true } 
+        { merge: true }
       );
-
       setWinner(wonPrize);
       setStage("result");
-    } catch (e) {
+    } catch (e: any) {
       console.error("Spin failure:", e);
+      if (e?.code === "permission_denied" || e?.message?.includes("permission_denied")) {
+        alert("Roulette is currently unavailable due to permission issues. Please try again later.");
+      }
     } finally {
       setIsSpinning(false);
     }
@@ -296,10 +351,10 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
     const config = {
       no_prize: { icon: <Gift size={40} />, title: "No Access", body: "Complete the quiz to unlock your spin.", btnLabel: onClose ? "Close Window" : "Back to Results" },
       no_stock: { icon: <Gift size={40} className="text-red-600" />, title: "Empty Pool", body: "All prizes have been claimed.", btnLabel: onClose ? "Close Window" : "Back to Results" },
-      already_spin: { icon: <Lock size={40} className="text-black"/>, title: "Idled", body: "You have already used your spin allocation.", btnLabel: onClose ? "Close Window" : "Back to Results" },
+      already_spin: { icon: <Lock size={40} className="text-black" />, title: "Idled", body: "You have already used your spin allocation.", btnLabel: onClose ? "Close Window" : "Back to Results" },
       result: { icon: <Trophy size={40} className="text-red-600" />, title: "You Won!", body: winner?.name || "", btnLabel: onClose ? "Finish" : "Done" }
     };
-    
+
     const current = config[stage === "result" ? "result" : (stage as keyof typeof config)];
 
     return (
@@ -308,13 +363,13 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
           <div className="flex justify-center mb-4">{current.icon}</div>
           <h2 className="text-3xl text-red-600 font-black uppercase mb-2">{current.title}</h2>
           <p className="font-bold text-black mb-6 uppercase text-sm">{current.body}</p>
-          
+
           {winner && (stage === "already_spin" || stage === "result") && (
             <div className="border-2 border-black p-3 mb-6 flex items-center gap-3">
               {winner.imageUrl && (
-                <img 
-                  src={winner.imageUrl} 
-                  className="w-10 h-10 object-cover border border-black" 
+                <img
+                  src={winner.imageUrl}
+                  className="w-10 h-10 object-cover border border-black"
                   alt={winner.name}
                 />
               )}
@@ -336,19 +391,19 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
         <button onClick={handleCloseNavigation} className="p-2 border-2 border-black hover:bg-black hover:text-white transition-all">
           <ChevronLeft size={24} />
         </button>
-        <h2 className="font-black uppercase tracking-tighter text-xl">Roulette</h2>
+        <h2 className="font-black uppercase tracking-tighter text-xl text-black">Roulette</h2>
         <div className="w-10" />
       </div>
 
       <div className="flex flex-col items-center w-full">
-        <h1 className="text-4xl font-black uppercase italic mb-2 tracking-tighter">Spin & Win</h1>
+        <h1 className="text-4xl font-black uppercase italic mb-2 tracking-tighter text-black">Spin & Win</h1>
         <div className="h-1 w-20 bg-red-600 mb-8" />
 
         <div className="relative">
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30 drop-shadow-md">
             <div className="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[30px] border-t-red-600" />
           </div>
-          
+
           <div className="border-8 border-black rounded-full p-1 bg-white shadow-2xl">
             {prizes.length > 0 ? (
               <RouletteWheel prizes={prizes} controls={controls} />
@@ -359,8 +414,8 @@ export default function PlayerRoulettePage({ eventId: propEventId, onClose }: Ro
             )}
           </div>
         </div>
-        
-        <p className="mt-8 font-black uppercase text-[10px] tracking-widest text-gray-400">
+
+        <p className="mt-8 font-black uppercase text-[10px] tracking-widest text-black">
           {prizes.length} Slices Available
         </p>
       </div>

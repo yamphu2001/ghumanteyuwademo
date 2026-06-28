@@ -27,6 +27,37 @@ export default function QuizPage({ params }: { params: Promise<{ eventId: string
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [timerSeconds, setTimerSeconds] = useState(30);
 
+  const quizEntryKey = `quizAccess:${eventId}`;
+
+  const isQuizAccessValid = () => {
+    if (typeof window === "undefined") return false;
+    const raw = window.sessionStorage.getItem(quizEntryKey);
+    if (!raw) return false;
+
+    try {
+      const parsed = JSON.parse(raw);
+      return (
+        parsed?.eventId === eventId &&
+        typeof parsed.ts === "number" &&
+        Date.now() - parsed.ts < 10 * 60 * 1000
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  const consumeQuizAccess = () => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.removeItem(quizEntryKey);
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!isQuizAccessValid()) {
+      router.replace(`/eventsmaker/${eventId}/finish`);
+    }
+  }, [eventId, router]);
+
   useEffect(() => {
     let isMounted = true;
     
@@ -36,6 +67,12 @@ export default function QuizPage({ params }: { params: Promise<{ eventId: string
         return;
       }
 
+      if (!isQuizAccessValid()) {
+        router.replace(`/eventsmaker/${eventId}/finish`);
+        return;
+      }
+
+      consumeQuizAccess();
       setUserId(user.uid);
 
       try {

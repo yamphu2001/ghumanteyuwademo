@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { db, auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth"; // Import the auth listener
@@ -91,32 +91,25 @@ export default function FinishGame({ uid: propUid, eventId, onClose, initialValu
   const [showConfirm, setShowConfirm] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
   // Track the true active authenticated UID reactively.
   // Seed from auth.currentUser or propUid so the scanner is never blocked
-  // while waiting for onAuthStateChanged to resolve (which requires network).
+  // while waiting for onAuthStateChanged to resolve.
   const [activeUid, setActiveUid] = useState<string | null>(
     auth.currentUser?.uid || propUid || null
   );
+  const activeUidRef = useRef<string | null>(auth.currentUser?.uid || propUid || null);
 
   useEffect(() => {
-    // If we already have a UID from the eager seed above, no need to block on the
-    // network — but still subscribe so we pick up any token refresh when online.
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("[Auth Sync] Active user detected:", user.uid);
-        setActiveUid(user.uid);
-      } else {
-        // Only clear the UID if we are online and Firebase explicitly says no user.
-        // Offline: Firebase emits null because it cannot reach the server;
-        // don't wipe the propUid we already have — the player is still the same person.
-        if (navigator.onLine) {
-          setActiveUid(null);
-        }
-      }
+      const uid = user?.uid || propUid || null;
+      activeUidRef.current = uid;
+      setActiveUid(uid);
+      setAuthReady(true);
     });
     return () => unsubscribe();
-  }, []);
+  }, [propUid]);
 
   // Use just eventId as the queue key — consistent with how page.tsx flushes
   const { enqueue } = useOfflineQueue(eventId);
@@ -129,10 +122,12 @@ export default function FinishGame({ uid: propUid, eventId, onClose, initialValu
   }, [initialValue]);
 
   const handleScanSuccess = useCallback(async (scannedValue: string) => {
-    if (isProcessing || showConfirm || !activeUid) return;
+    if (isProcessing || showConfirm) return;
+    const uid = activeUidRef.current || propUid;
+    if (!uid) return;
     setIsProcessing(true);
 
-    const result = await handleRouletteScan(activeUid, eventId, scannedValue, false);
+    const result = await handleRouletteScan(uid, eventId, scannedValue, false);
 
     if (result.routeToFinish && !result.askConfirmation) {
       router.push(`/eventsmaker/${eventId}/finish`);
@@ -152,11 +147,12 @@ export default function FinishGame({ uid: propUid, eventId, onClose, initialValu
   }, [activeUid, eventId, isProcessing, showConfirm, router]);
 
   const handleConfirm = async () => {
-    if (!pendingValue || !activeUid) return;
+    const uid = activeUidRef.current || propUid;
+    if (!pendingValue || !uid) return;
     setIsProcessing(true);
     setShowConfirm(false);
 
-    const result = await handleRouletteScan(activeUid, eventId, pendingValue, true);
+    const result = await handleRouletteScan(uid, eventId, pendingValue, true);
 
     if (result.routeToFinish) {
       const finishTime = new Date().toLocaleString();
@@ -164,7 +160,7 @@ export default function FinishGame({ uid: propUid, eventId, onClose, initialValu
       // 1. Online check to prevent duplicate logic
       if (navigator.onLine) {
         try {
-          const snap = await getDoc(doc(db, "events", eventId, "player_log", activeUid));
+          const snap = await getDoc(doc(db, "events", eventId, "player_log", uid));
           if (snap.exists() && snap.data()?.finishat) {
             router.push(`/eventsmaker/${eventId}/finish`);
             return;
@@ -179,15 +175,15 @@ export default function FinishGame({ uid: propUid, eventId, onClose, initialValu
       try {
         await enqueue({
           type: 'set',
-          path: `events/${eventId}/player_log/${activeUid}`,
-          data: { finishat: finishTime },
+          path: `events/${eventId}/player_log/${uid}`,
+          data: { finishat: finishTime, reachedFinish: true },
           merge: true,
         });
 
         // Persist a local flag so offline dedup guard catches any re-scan
         // before the queue is flushed to Firestore.
         try {
-          await localforage.setItem(`finishat_recorded_${eventId}_${activeUid}`, true);
+          await localforage.setItem(`finishat_recorded_${eventId}_${uid}`, true);
         } catch (flagErr) {
           console.warn("[FinishGame] Could not persist local finishat flag:", flagErr);
         }
@@ -212,7 +208,7 @@ export default function FinishGame({ uid: propUid, eventId, onClose, initialValu
   };
 
   // Prevent interactions completely until Firebase Auth confirms who is logged in online
-  if (!activeUid) {
+  if (!activeUid && !authReady) {
     return (
       <div style={s.overlay}>
         <div style={s.pill}>Syncing secure user session...</div>

@@ -19,7 +19,8 @@ export async function hasPlayerFinished(eventId: string, uid: string): Promise<b
     const playerLogRef = doc(db, "events", eventId, "player_log", uid);
     const snap = await getDoc(playerLogRef);
     if (!snap.exists()) return false;
-    return snap.data()?.reachedFinish === true;
+    const data = snap.data();
+    return data?.reachedFinish === true || Boolean(data?.finishat);
   } catch (err) {
     console.error("[checkFinished] Failed to check finish status:", err);
     return false;
